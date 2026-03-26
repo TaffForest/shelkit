@@ -123,21 +123,26 @@ function AuthProvider({ children }) {
     setLoading(true)
 
     try {
+      console.log('Available wallets:', wallets?.map(w => ({ name: w.name, readyState: w.readyState })))
+
       // Find Petra wallet in available wallets
       const petra = wallets?.find(w =>
         w.name.toLowerCase().includes('petra')
       )
 
+      console.log('Found Petra:', petra?.name, 'readyState:', petra?.readyState)
+
       if (petra) {
         await aptosConnect(petra.name)
       } else if (wallets?.length > 0) {
-        // Connect to first available wallet
+        console.log('Using first wallet:', wallets[0].name)
         await aptosConnect(wallets[0].name)
       } else {
         throw new Error('No Aptos wallet found. Please install Petra.')
       }
     } catch (err) {
-      setError(err.message)
+      console.error('Connect error:', err)
+      setError(err.message || 'Failed to connect wallet')
       setLoading(false)
     }
   }, [wallets, aptosConnect])
@@ -184,7 +189,9 @@ export function WalletProvider({ children }) {
     <AptosWalletAdapterProvider
       autoConnect={false}
       dappConfig={{ network: 'testnet' }}
-      onError={(error) => console.error('Wallet adapter error:', error)}
+      onError={(error) => {
+        console.error('Wallet adapter error:', error?.message || error?.toString?.() || JSON.stringify(error))
+      }}
     >
       <AuthProvider>
         {children}

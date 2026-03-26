@@ -332,32 +332,34 @@ const MIME_TYPES = {
 };
 
 /**
- * Serve a file — tries Shelby first, falls back to local disk.
- * Shelby responses are cached locally for performance.
+ * Serve a file — Shelby-first, with local disk cache.
+ * Files are served from the decentralised network by default.
+ * Local disk is used as a cache to avoid repeated downloads.
  */
 async function serveFile(deployment, filePath, res) {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-  // 1. Try local disk first (fast path — files are still on disk after deploy)
-  if (deployment.extractDir) {
-    const fullPath = path.join(deployment.extractDir, filePath);
-    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('X-Served-From', 'local');
-      return res.sendFile(fullPath);
-    }
-  }
-
-  // 2. Try Shelby network (decentralised fallback)
   const files = deployment.files || {};
   const blobName = files[filePath] || files['/' + filePath];
 
+  // 1. Check local cache first (avoids re-downloading from Shelby)
+  if (deployment.extractDir) {
+    const cachePath = path.join(deployment.extractDir, filePath);
+    if (fs.existsSync(cachePath) && fs.statSync(cachePath).isFile()) {
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('X-Served-From', blobName ? 'shelby-cached' : 'local');
+      if (blobName) res.setHeader('X-Blob-Name', blobName);
+      return res.sendFile(cachePath);
+    }
+  }
+
+  // 2. Fetch from Shelby network (primary source)
   if (blobName && isRealAPI()) {
     try {
       const data = await downloadFile(blobName);
       if (data) {
-        // Cache locally for next time
+        // Cache locally for subsequent requests
         if (deployment.extractDir) {
           const cachePath = path.join(deployment.extractDir, filePath);
           const cacheDir = path.dirname(cachePath);
@@ -372,6 +374,16 @@ async function serveFile(deployment, filePath, res) {
       }
     } catch (err) {
       console.error(`Shelby download failed for ${blobName}:`, err.message);
+    }
+  }
+
+  // 3. Fallback: local disk without cache (stub mode or Shelby failure)
+  if (deployment.extractDir) {
+    const fullPath = path.join(deployment.extractDir, filePath);
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('X-Served-From', 'local-fallback');
+      return res.sendFile(fullPath);
     }
   }
 

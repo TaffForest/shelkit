@@ -15,7 +15,7 @@ RUN apk add --no-cache git python3 make g++
 
 # Copy server package and install deps
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy server code
 COPY server/ ./server/

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  shelkit:
+    build: .
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - SHELBY_API_KEY=${SHELBY_API_KEY:-}
+      - SHELBY_PRIVATE_KEY=${SHELBY_PRIVATE_KEY:-}
+      - SHELBY_NETWORK=${SHELBY_NETWORK:-testnet}
+      - BLOB_EXPIRY_DAYS=${BLOB_EXPIRY_DAYS:-365}
+      - BASE_DOMAIN=shelkit.forestinfra.com
+      - DB_PATH=/app/data/shelkit.db
+    volumes:
+      - shelkit-data:/app/data
+      - shelkit-uploads:/app/server/uploads
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - shelkit
+    restart: unless-stopped
+
+  # Run once to get SSL certs, then stop
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h; certbot renew; done'"
+
+volumes:
+  shelkit-data:
+  shelkit-uploads:
+  letsencrypt:
+  certbot-webroot:

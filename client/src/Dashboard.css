@@ -1,0 +1,266 @@
+/* ===== Dashboard ===== */
+.dash-page {
+  min-height: 100vh;
+}
+
+.dash-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.dash-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.dash-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.dash-header p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.dash-new-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #050505;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.dash-new-btn:hover {
+  background: var(--accent-dark);
+}
+
+/* ===== Empty State ===== */
+.dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.dash-empty h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+
+.dash-empty p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.dash-cta {
+  padding: 10px 24px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #050505;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.dash-cta:hover {
+  background: var(--accent-dark);
+}
+
+/* ===== Deployment Cards ===== */
+.dash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: border-color 0.15s;
+}
+
+.dash-card:hover {
+  border-color: #2a2a2a;
+}
+
+.dash-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dash-card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+
+.dash-card-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dash-framework-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-left: 4px;
+}
+
+.dash-card-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dash-card-url a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  transition: opacity 0.15s;
+}
+
+.dash-card-url a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.dash-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dash-card-cid {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.dash-card-subdomain {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.dash-subdomain-label {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dash-subdomain-value {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* ===== Card Actions ===== */
+.dash-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.dash-action-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.dash-action-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.dash-delete-btn:hover {
+  color: var(--error);
+  border-color: var(--error);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.dash-card-version {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--accent);
+}
+
+/* Reuse copy-btn from Deploy.css */
+.dash-card .copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.dash-card .copy-btn:hover {
+  color: var(--accent);
+  background: var(--bg-hover);
+}

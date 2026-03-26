@@ -281,6 +281,9 @@ function resolveFilePath(deployment, filePath) {
   // Normalise path (remove leading slash)
   const normalised = filePath.replace(/^\//, '');
 
+  // Path traversal protection
+  if (normalised.includes('..') || path.isAbsolute(normalised)) return null;
+
   // Direct match
   if (files[normalised]) return normalised;
   if (files['/' + normalised]) return '/' + normalised;
@@ -323,6 +326,10 @@ const MIME_TYPES = {
   '.mp4': 'video/mp4', '.webm': 'video/webm', '.ogg': 'audio/ogg',
   '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.pdf': 'application/pdf',
   '.webmanifest': 'application/manifest+json',
+  '.manifest': 'text/cache-manifest',
+  '.ts': 'application/typescript', '.tsx': 'application/typescript',
+  '.jsx': 'application/javascript',
+  '.zip': 'application/zip',
 };
 
 /**

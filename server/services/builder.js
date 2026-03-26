@@ -9,7 +9,7 @@ const {
   LIFECYCLE_SCRIPTS,
 } = require('./sandbox');
 
-const BUILD_TIMEOUT = 2 * 60 * 1000; // 2 minutes (reduced from 5)
+const BUILD_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 /** Known framework output directories */
 const FRAMEWORK_MAP = [

@@ -11,8 +11,8 @@ export default function Landing() {
             <span>Shel<span className="accent">Kit</span></span>
           </a>
           <div className="nav-links">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How it works</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }}>Features</a>
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>How it works</a>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
         </div>

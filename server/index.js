@@ -25,8 +25,16 @@ app.set('trust proxy', 1);
 const uploadsDir = path.join(__dirname, 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Middleware
-app.use(cors());
+// Middleware — CORS restricted to base domain
+const BASE_DOMAIN = process.env.BASE_DOMAIN || 'localhost';
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (origin.includes(BASE_DOMAIN) || origin.includes('localhost')) return callback(null, true);
+    callback(null, false);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Rate limiting
@@ -38,8 +46,11 @@ const deployLimiter = rateLimit({
   message: { error: 'Too many deployments. Please wait a minute.' },
 });
 
-// Subdomain routing
-app.use(subdomainMiddleware);
+// Subdomain routing — skip API and health routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/health')) return next();
+  subdomainMiddleware(req, res, next);
+});
 
 // Multer
 const upload = multer({
@@ -54,8 +65,17 @@ const upload = multer({
   },
 });
 
-// Auth routes (public)
-app.use('/api/auth', authRoutes);
+// Auth rate limiting
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts. Try again later.' },
+});
+
+// Auth routes (public, rate limited)
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/health', healthRoutes);
 
 // Protected deploy routes
@@ -73,6 +93,11 @@ app.post('/api/deployments/:id/rollback', requireAuth, rollbackDeployment);
 app.get('/deploy/:id', serveDeploy);
 app.get('/deploy/:id/*', serveDeploy);
 
+// 404 handler for undefined API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
 // Serve React frontend
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(clientDist)) {
@@ -82,8 +107,23 @@ if (fs.existsSync(clientDist)) {
   });
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`ShelKit running at http://localhost:${PORT}`);
-  console.log(`Shelby: ${process.env.SHELBY_PRIVATE_KEY ? 'live (' + (process.env.SHELBY_NETWORK || 'testnet') + ')' : 'stub mode'}`);
+  console.log(`Shelby: ${process.env.SHELBY_PRIVATE_KEY ? 'live (' + (process.env.SHELBY_NETWORK || 'shelbynet') + ')' : 'stub mode'}`);
   console.log(`Database: SQLite`);
 });
+
+// Graceful shutdown
+function gracefulShutdown(signal) {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

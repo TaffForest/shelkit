@@ -9,13 +9,19 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - SHELBY_API_KEY=${SHELBY_API_KEY:-}
       - SHELBY_PRIVATE_KEY=${SHELBY_PRIVATE_KEY:-}
-      - SHELBY_NETWORK=${SHELBY_NETWORK:-testnet}
+      - SHELBY_NETWORK=${SHELBY_NETWORK:-shelbynet}
       - BLOB_EXPIRY_DAYS=${BLOB_EXPIRY_DAYS:-365}
       - BASE_DOMAIN=shelkit.forestinfra.com
       - DB_PATH=/app/data/shelkit.db
     volumes:
       - shelkit-data:/app/data
       - shelkit-uploads:/app/server/uploads
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
 
   nginx:

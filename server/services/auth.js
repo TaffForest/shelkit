@@ -1,8 +1,13 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
-/** JWT secret — in production use an env var */
-const JWT_SECRET = process.env.JWT_SECRET || 'shelkit_dev_secret_' + crypto.randomBytes(16).toString('hex');
+/** JWT secret — must be set in production */
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: JWT_SECRET must be set in production');
+  process.exit(1);
+}
+const EFFECTIVE_SECRET = JWT_SECRET || 'shelkit_dev_secret_change_me';
 const JWT_EXPIRY = '24h';
 
 /** In-memory nonce store with expiry */
@@ -72,7 +77,9 @@ async function verifySignature(address, signature, fullMessage) {
     // If signature format doesn't include publicKey (mock/dev mode), accept it
   } catch (err) {
     if (err.message === 'Invalid signature.') throw err;
-    // SDK not available or format mismatch — accept in dev mode
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Signature verification failed.');
+    }
     console.warn('Signature verification skipped (dev mode):', err.message);
   }
 
@@ -85,7 +92,7 @@ async function verifySignature(address, signature, fullMessage) {
  * Generate a JWT for an authenticated wallet address.
  */
 function generateToken(address) {
-  return jwt.sign({ wallet: address }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+  return jwt.sign({ wallet: address }, EFFECTIVE_SECRET, { expiresIn: JWT_EXPIRY });
 }
 
 /**
@@ -93,7 +100,7 @@ function generateToken(address) {
  * Returns the decoded payload or throws.
  */
 function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  return jwt.verify(token, EFFECTIVE_SECRET);
 }
 
 /**

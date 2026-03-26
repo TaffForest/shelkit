@@ -19,8 +19,6 @@ const stmts = {
 
   softDelete: db.prepare(`UPDATE deployments SET deleted_at = datetime('now') WHERE id = ? AND wallet = ?`),
 
-  hardDelete: db.prepare(`DELETE FROM deployments WHERE id = ?`),
-
   // Version tracking
   insertVersion: db.prepare(`
     INSERT INTO deploy_versions (deployment_id, project_id, version, root_cid, extract_dir, file_count, files_json)
@@ -36,15 +34,6 @@ const stmts = {
     WHERE id = @id
   `),
 
-  // Projects
-  insertProject: db.prepare(`
-    INSERT INTO projects (id, wallet, name, repo_url, active_deployment_id)
-    VALUES (@id, @wallet, @name, @repoUrl, @activeDeploymentId)
-  `),
-
-  getProject: db.prepare(`SELECT * FROM projects WHERE id = ?`),
-
-  listProjects: db.prepare(`SELECT * FROM projects WHERE wallet = ? ORDER BY created_at DESC`),
 };
 
 /** Format a DB row into the deployment object format used by the rest of the app */

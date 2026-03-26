@@ -8,6 +8,8 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [deployments, setDeployments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
   useEffect(() => {
@@ -88,8 +90,14 @@ export default function Dashboard() {
         </div>
 
         {loading && (
-          <div className="dash-empty">
-            <p>Loading deployments...</p>
+          <div className="dash-list">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="dash-card dash-skeleton">
+                <div className="skeleton-line skeleton-wide" />
+                <div className="skeleton-line skeleton-medium" />
+                <div className="skeleton-line skeleton-narrow" />
+              </div>
+            ))}
           </div>
         )}
 
@@ -107,7 +115,7 @@ export default function Dashboard() {
 
         {!loading && deployments.length > 0 && (
           <div className="dash-list">
-            {deployments.map((d) => (
+            {deployments.slice((page - 1) * PER_PAGE, page * PER_PAGE).map((d) => (
               <div key={d.id} className="dash-card">
                 <div className="dash-card-top">
                   <div className="dash-card-status">
@@ -152,6 +160,14 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!loading && deployments.length > PER_PAGE && (
+          <div className="dash-pagination">
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</button>
+            <span>Page {page} of {Math.ceil(deployments.length / PER_PAGE)}</span>
+            <button disabled={page >= Math.ceil(deployments.length / PER_PAGE)} onClick={() => setPage(p => p + 1)}>Next</button>
           </div>
         )}
       </div>

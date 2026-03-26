@@ -63,6 +63,14 @@ const BLOCKED_PATTERNS = [
   /\bpython\b/,        // running python
   /\bnode\s+-e\b/,     // node -e "code"
   /\bnode\s+--eval\b/,
+  /\bpowersh/i,        // powershell
+  /\btelnet\b/i,
+  /\bssh\b/i,
+  /\bscp\b/i,
+  /\brsync\b/i,
+  /\bmkfifo\b/i,
+  />\s*\/dev\/tcp/,    // bash tcp redirect
+  /\bdd\b.*\bif=/,     // dd command
 ];
 
 /**

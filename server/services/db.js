@@ -58,6 +58,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_deployments_deleted ON deployments(deleted_at);
   CREATE INDEX IF NOT EXISTS idx_projects_wallet ON projects(wallet);
   CREATE INDEX IF NOT EXISTS idx_versions_deployment ON deploy_versions(deployment_id);
+  CREATE INDEX IF NOT EXISTS idx_deployments_created ON deployments(created_at);
+  CREATE INDEX IF NOT EXISTS idx_versions_created ON deploy_versions(created_at);
 `);
 
 module.exports = db;

@@ -16,7 +16,7 @@ router.post('/challenge', (req, res) => {
   }
 
   // Basic address validation (Aptos addresses are 0x + 64 hex chars)
-  if (!/^0x[a-fA-F0-9]{1,64}$/.test(address)) {
+  if (!/^0x[a-fA-F0-9]{64}$/.test(address)) {
     return res.status(400).json({ error: 'Invalid Aptos wallet address.' });
   }
 

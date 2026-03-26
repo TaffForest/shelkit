@@ -264,3 +264,47 @@
   color: var(--accent);
   background: var(--bg-hover);
 }
+
+/* Skeleton loading */
+.dash-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+.skeleton-line {
+  height: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.skeleton-wide { width: 80%; }
+.skeleton-medium { width: 60%; }
+.skeleton-narrow { width: 40%; }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Pagination */
+.dash-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 0;
+}
+.dash-pagination button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.dash-pagination button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.dash-pagination span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}

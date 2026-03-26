@@ -31,12 +31,18 @@ function cloneRepo(repoUrl, destDir, branch = 'main') {
 
   fs.mkdirSync(destDir, { recursive: true });
 
+  // Sanitize branch name to prevent command injection
+  const safeBranch = branch.replace(/[^a-zA-Z0-9._\-\/]/g, '');
+  if (safeBranch !== branch) {
+    throw new Error('Invalid branch name');
+  }
+
   const { repo } = parseGithubUrl(repoUrl);
   const cloneDir = path.join(destDir, repo);
 
   try {
     execSync(
-      `git clone --depth 1 --branch ${branch} ${repoUrl} ${cloneDir}`,
+      `git clone --depth 1 --branch ${safeBranch} ${repoUrl} ${cloneDir}`,
       {
         timeout: CLONE_TIMEOUT,
         stdio: ['ignore', 'pipe', 'pipe'],

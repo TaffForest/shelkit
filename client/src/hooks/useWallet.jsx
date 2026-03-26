@@ -48,7 +48,6 @@ function AuthProvider({ children }) {
       const addr = typeof account.address === 'string'
         ? account.address
         : account.address?.toString?.() || String(account.address)
-      console.log('[ShelKit] Wallet connected, address:', addr, 'account:', JSON.stringify(account))
       if (addr) authenticateWallet(addr)
     }
   }, [walletConnected, account])
@@ -56,35 +55,29 @@ function AuthProvider({ children }) {
   const authenticateWallet = async (walletAddress) => {
     // Ensure it's a string
     const addr = String(walletAddress)
-    console.log('[ShelKit] Authenticating wallet:', addr)
     setLoading(true)
     setError(null)
 
     try {
       // 1. Get challenge from server
-      console.log('[ShelKit] Fetching challenge...')
       const challengeRes = await fetch('/api/auth/challenge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: addr }),
       })
       const challengeData = await challengeRes.json()
-      console.log('[ShelKit] Challenge response:', JSON.stringify(challengeData).slice(0, 100))
 
       if (!challengeRes.ok) {
         throw new Error(challengeData.error || 'Failed to get challenge')
       }
 
       // 2. Sign with wallet adapter
-      console.log('[ShelKit] Requesting signature...')
       const signResult = await signMessage({
         message: challengeData.message,
         nonce: challengeData.nonce,
       })
-      console.log('[ShelKit] Sign result:', JSON.stringify(signResult).slice(0, 200))
 
       // 3. Verify on server
-      console.log('[ShelKit] Verifying signature...')
       const verifyRes = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +92,6 @@ function AuthProvider({ children }) {
       })
 
       const verifyData = await verifyRes.json()
-      console.log('[ShelKit] Verify response:', JSON.stringify(verifyData).slice(0, 100))
 
       if (!verifyRes.ok) {
         throw new Error(verifyData.error || 'Authentication failed')
@@ -110,7 +102,6 @@ function AuthProvider({ children }) {
       setSavedAddress(addr)
       localStorage.setItem(TOKEN_KEY, verifyData.token)
       localStorage.setItem(WALLET_KEY, addr)
-      console.log('[ShelKit] Authenticated successfully!')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -181,7 +172,11 @@ function AuthProvider({ children }) {
 /** Top-level provider wrapping AptosWalletAdapterProvider + AuthProvider */
 export function WalletProvider({ children }) {
   return (
-    <AptosWalletAdapterProvider autoConnect={false}>
+    <AptosWalletAdapterProvider
+      autoConnect={false}
+      dappConfig={{ network: 'testnet' }}
+      onError={(error) => console.error('Wallet adapter error:', error)}
+    >
       <AuthProvider>
         {children}
       </AuthProvider>

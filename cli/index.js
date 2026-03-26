@@ -13,26 +13,26 @@ program
 program
   .command('login')
   .description('Authenticate with ShelKit (opens browser for wallet auth)')
-  .option('-s, --server <url>', 'ShelKit server URL', 'http://localhost:3000')
+  .option('-s, --server <url>', 'ShelKit server URL', 'https://shelkit.forestinfra.com')
   .action(require('./commands/login'));
 
 program
   .command('deploy [dir]')
   .description('Deploy a directory to ShelKit')
-  .option('-s, --server <url>', 'ShelKit server URL', 'http://localhost:3000')
+  .option('-s, --server <url>', 'ShelKit server URL', 'https://shelkit.forestinfra.com')
   .option('--build', 'Upload source and build server-side')
   .action(require('./commands/deploy'));
 
 program
   .command('list')
   .description('List your deployments')
-  .option('-s, --server <url>', 'ShelKit server URL', 'http://localhost:3000')
+  .option('-s, --server <url>', 'ShelKit server URL', 'https://shelkit.forestinfra.com')
   .action(require('./commands/list'));
 
 program
   .command('delete <id>')
   .description('Delete a deployment')
-  .option('-s, --server <url>', 'ShelKit server URL', 'http://localhost:3000')
+  .option('-s, --server <url>', 'ShelKit server URL', 'https://shelkit.forestinfra.com')
   .action(require('./commands/delete'));
 
 program.parse();

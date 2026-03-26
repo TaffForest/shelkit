@@ -1,10 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useWallet } from './hooks/useWallet.jsx'
 import './Deploy.css'
 
 export default function Deploy() {
-  const { connected, address, loading: walletLoading, error: walletError, hasPetra, connect, disconnect, authHeaders } = useWallet()
+  const { connected, address, token, loading: walletLoading, error: walletError, hasPetra, connect, disconnect, authHeaders } = useWallet()
+  const [searchParams] = useSearchParams()
+
+  // CLI callback: when authenticated, send token back to CLI's local server
+  useEffect(() => {
+    const cliCallback = searchParams.get('cli_callback')
+    if (cliCallback && connected && token && address) {
+      const callbackUrl = `${cliCallback}?token=${encodeURIComponent(token)}&wallet=${encodeURIComponent(address)}`
+      fetch(callbackUrl, { mode: 'no-cors' }).catch(() => {})
+    }
+  }, [connected, token, address, searchParams])
 
   const [tab, setTab] = useState('upload') // 'upload' | 'github'
   const [file, setFile] = useState(null)

@@ -77,6 +77,14 @@ function AuthProvider({ children }) {
         nonce: challengeData.nonce,
       })
 
+      console.log('Sign result:', JSON.stringify(signResult, null, 2))
+
+      // Extract signature and public key - handle different wallet adapter formats
+      const sig = signResult.signature?.toString?.() || signResult.signature || ''
+      const pubKey = signResult.publicKey?.toString?.() || signResult.publicKey || ''
+      // The full message signed by the wallet (may include APTOS prefix)
+      const signedMessage = signResult.fullMessage || signResult.message || challengeData.message
+
       // 3. Verify on server
       const verifyRes = await fetch('/api/auth/verify', {
         method: 'POST',
@@ -84,10 +92,11 @@ function AuthProvider({ children }) {
         body: JSON.stringify({
           address: addr,
           signature: {
-            publicKey: signResult.publicKey || signResult.prefix || '',
-            signature: signResult.signature || '',
+            publicKey: pubKey,
+            signature: sig,
           },
           message: challengeData.message,
+          fullMessage: signedMessage,
         }),
       })
 

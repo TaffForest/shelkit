@@ -30,14 +30,14 @@ router.post('/challenge', (req, res) => {
  * Body: { address: "0x...", signature: { publicKey, signature }, message: "..." }
  */
 router.post('/verify', async (req, res) => {
-  const { address, signature, message } = req.body;
+  const { address, signature, message, fullMessage } = req.body;
 
   if (!address || !signature || !message) {
     return res.status(400).json({ error: 'Address, signature, and message are required.' });
   }
 
   try {
-    await verifySignature(address, signature, message);
+    await verifySignature(address, signature, message, fullMessage);
     const token = generateToken(address);
 
     res.json({

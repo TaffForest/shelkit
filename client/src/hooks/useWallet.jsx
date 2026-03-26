@@ -141,8 +141,14 @@ function AuthProvider({ children }) {
         throw new Error('No Aptos wallet found. Please install Petra.')
       }
     } catch (err) {
+      // Ignore CORS errors from Aptos API chain ID check — wallet still connects
+      const msg = err?.message || ''
+      if (msg.includes('Failed to fetch') || msg.includes('CORS')) {
+        console.warn('Aptos API CORS error (non-blocking):', msg)
+        return
+      }
       console.error('Connect error:', err)
-      setError(err.message || 'Failed to connect wallet')
+      setError(msg || 'Failed to connect wallet')
       setLoading(false)
     }
   }, [wallets, aptosConnect])
@@ -188,10 +194,16 @@ export function WalletProvider({ children }) {
   return (
     <AptosWalletAdapterProvider
       autoConnect={false}
-      dappConfig={{ network: 'testnet' }}
+      dappConfig={{
+        network: 'testnet',
+        aptosConnectDappId: undefined,
+      }}
       optInWallets={['Petra']}
       onError={(error) => {
-        console.error('Wallet adapter error:', error?.message || error?.toString?.() || JSON.stringify(error))
+        // Suppress CORS errors from Aptos API — doesn't affect wallet connection
+        const msg = error?.message || error?.toString?.() || ''
+        if (msg.includes('Failed to fetch') || msg.includes('CORS')) return
+        console.error('Wallet adapter error:', msg)
       }}
     >
       <AuthProvider>

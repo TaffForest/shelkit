@@ -250,16 +250,22 @@ function listDeployments(req, res) {
   res.json(all);
 }
 
-/** Subdomain middleware */
+/** Subdomain + custom domain middleware */
 async function subdomainMiddleware(req, res, next) {
   const host = req.hostname;
   const baseDomain = process.env.BASE_DOMAIN || 'shelkit.local';
-  if (!host.endsWith(baseDomain) || host === baseDomain) {
-    return next();
+
+  let deployment = null;
+
+  if (host.endsWith(baseDomain) && host !== baseDomain) {
+    // Subdomain routing: xyz.shelkit.forestinfra.com
+    const subdomain = host.replace(`.${baseDomain}`, '');
+    deployment = store.findBySubdomain(subdomain);
+  } else if (host !== baseDomain && !host.includes('localhost')) {
+    // Custom domain routing: mysite.com
+    deployment = store.findByDomain(host);
   }
 
-  const subdomain = host.replace(`.${baseDomain}`, '');
-  const deployment = store.findBySubdomain(subdomain);
   if (!deployment) return next();
 
   let filePath = req.path.slice(1) || 'index.html';

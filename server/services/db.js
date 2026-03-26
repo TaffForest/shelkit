@@ -53,6 +53,16 @@ db.exec(`
     FOREIGN KEY (deployment_id) REFERENCES deployments(id)
   );
 
+  CREATE TABLE IF NOT EXISTS custom_domains (
+    domain TEXT PRIMARY KEY,
+    deployment_id TEXT NOT NULL,
+    wallet TEXT NOT NULL,
+    verified INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (deployment_id) REFERENCES deployments(id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_custom_domains_deployment ON custom_domains(deployment_id);
   CREATE INDEX IF NOT EXISTS idx_deployments_wallet ON deployments(wallet);
   CREATE INDEX IF NOT EXISTS idx_deployments_subdomain ON deployments(subdomain);
   CREATE INDEX IF NOT EXISTS idx_deployments_deleted ON deployments(deleted_at);

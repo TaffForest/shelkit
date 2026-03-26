@@ -12,6 +12,7 @@ const {
   deleteDeployment, listVersions, rollbackDeployment, handleGithubDeploy,
 } = require('./routes/deploy');
 const authRoutes = require('./routes/auth');
+const store = require('./services/store');
 const healthRoutes = require('./routes/health');
 const requireAuth = require('./middleware/requireAuth');
 
@@ -88,6 +89,39 @@ app.get('/api/deployments', requireAuth, listDeployments);
 app.delete('/api/deployments/:id', requireAuth, deleteDeployment);
 app.get('/api/deployments/:id/versions', requireAuth, listVersions);
 app.post('/api/deployments/:id/rollback', requireAuth, rollbackDeployment);
+
+// Custom domain management
+app.get('/api/domains', requireAuth, (req, res) => {
+  const domains = store.getDomainsByWallet(req.wallet);
+  res.json(domains);
+});
+
+app.post('/api/domains', requireAuth, (req, res) => {
+  const { domain, deploymentId } = req.body;
+  if (!domain || !deploymentId) {
+    return res.status(400).json({ error: 'Domain and deploymentId are required' });
+  }
+  // Basic domain validation
+  if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/.test(domain)) {
+    return res.status(400).json({ error: 'Invalid domain format' });
+  }
+  const deployment = store.get(deploymentId);
+  if (!deployment || deployment.wallet !== req.wallet) {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+  try {
+    store.addDomain(domain, deploymentId, req.wallet);
+    res.json({ success: true, domain, deploymentId, cname: process.env.BASE_DOMAIN || 'shelkit.forestinfra.com' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/domains/:domain', requireAuth, (req, res) => {
+  const removed = store.removeDomain(req.params.domain, req.wallet);
+  if (!removed) return res.status(404).json({ error: 'Domain not found' });
+  res.json({ success: true });
+});
 
 // Public — serve deployed sites
 app.get('/deploy/:id', serveDeploy);

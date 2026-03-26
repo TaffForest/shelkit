@@ -19,6 +19,7 @@ export default function Deploy() {
   const [tab, setTab] = useState('upload') // 'upload' | 'github'
   const [file, setFile] = useState(null)
   const [repoUrl, setRepoUrl] = useState('')
+  const [customSubdomain, setCustomSubdomain] = useState('')
   const [deploying, setDeploying] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -66,6 +67,7 @@ export default function Deploy() {
     try {
       const formData = new FormData()
       formData.append('file', file)
+      if (customSubdomain.trim()) formData.append('subdomain', customSubdomain.trim().toLowerCase())
 
       const res = await fetch('/api/deploy', {
         method: 'POST',
@@ -123,7 +125,7 @@ export default function Deploy() {
       const res = await fetch('/api/deploy/github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ repoUrl }),
+        body: JSON.stringify({ repoUrl, subdomain: customSubdomain.trim().toLowerCase() || undefined }),
       })
 
       const data = await res.json()
@@ -313,7 +315,23 @@ export default function Deploy() {
               </div>
             )}
 
-            {!deploying && !result && (
+            {!deploying && !result && (file || tab === 'github') && (
+              <div className="subdomain-input fade-in">
+                <label className="subdomain-label">Custom subdomain (optional)</label>
+                <div className="subdomain-row">
+                  <input
+                    type="text"
+                    className="subdomain-field"
+                    placeholder="my-app"
+                    value={customSubdomain}
+                    onChange={(e) => setCustomSubdomain(e.target.value.replace(/[^a-z0-9-]/gi, '').toLowerCase())}
+                  />
+                  <span className="subdomain-suffix">.shelkit.forestinfra.com</span>
+                </div>
+              </div>
+            )}
+
+            {!deploying && !result && tab === 'upload' && (
               <button className="deploy-btn fade-in" onClick={deploy} disabled={!file}>
                 Deploy
               </button>
@@ -333,8 +351,8 @@ export default function Deploy() {
                 <div className="result-row">
                   <span className="result-label">Deployment URL</span>
                   <div className="result-value result-url">
-                    <a href={result.url} target="_blank" rel="noopener noreferrer">
-                      {window.location.origin}{result.url}
+                    <a href={result.subdomain && result.subdomain !== result.deploymentId?.toLowerCase() ? `https://${result.subdomain}.shelkit.forestinfra.com` : result.url} target="_blank" rel="noopener noreferrer">
+                      {result.subdomain && result.subdomain !== result.deploymentId?.toLowerCase() ? `https://${result.subdomain}.shelkit.forestinfra.com` : `${window.location.origin}${result.url}`}
                     </a>
                     <button className="copy-btn" onClick={() => copyToClipboard(window.location.origin + result.url)} title="Copy URL">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

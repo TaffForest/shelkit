@@ -34,6 +34,12 @@ const stmts = {
     WHERE id = @id
   `),
 
+  // Custom domains
+  addDomain: db.prepare(`INSERT INTO custom_domains (domain, deployment_id, wallet) VALUES (?, ?, ?)`),
+  removeDomain: db.prepare(`DELETE FROM custom_domains WHERE domain = ? AND wallet = ?`),
+  getDomainsByDeployment: db.prepare(`SELECT * FROM custom_domains WHERE deployment_id = ?`),
+  getDomainsByWallet: db.prepare(`SELECT * FROM custom_domains WHERE wallet = ?`),
+  findByDomain: db.prepare(`SELECT d.* FROM deployments d JOIN custom_domains cd ON d.id = cd.deployment_id WHERE cd.domain = ? AND d.deleted_at IS NULL`),
 };
 
 /** Format a DB row into the deployment object format used by the rest of the app */
@@ -169,8 +175,37 @@ function rollback(deploymentId, version) {
   return formatDeployment(stmts.get.get(deploymentId));
 }
 
+// Custom domain methods
+function addDomain(domain, deploymentId, wallet) {
+  try {
+    stmts.addDomain.run(domain.toLowerCase(), deploymentId, wallet);
+    return true;
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) throw new Error('Domain already in use');
+    throw err;
+  }
+}
+
+function removeDomain(domain, wallet) {
+  const result = stmts.removeDomain.run(domain.toLowerCase(), wallet);
+  return result.changes > 0;
+}
+
+function getDomainsByDeployment(deploymentId) {
+  return stmts.getDomainsByDeployment.all(deploymentId);
+}
+
+function getDomainsByWallet(wallet) {
+  return stmts.getDomainsByWallet.all(wallet);
+}
+
+function findByDomain(domain) {
+  return formatDeployment(stmts.findByDomain.get(domain.toLowerCase()));
+}
+
 module.exports = {
-  save, get, list, listByWallet, findBySubdomain,
+  save, get, list, listByWallet, findBySubdomain, findByDomain,
   softDelete, cleanupFiles,
   saveVersion, getVersions, rollback,
+  addDomain, removeDomain, getDomainsByDeployment, getDomainsByWallet,
 };

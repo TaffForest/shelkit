@@ -9,6 +9,8 @@ export default function Dashboard() {
   const [deployments, setDeployments] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
+  const [domainInputs, setDomainInputs] = useState({})
+  const [domainLoading, setDomainLoading] = useState({})
   const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
@@ -28,7 +30,21 @@ export default function Dashboard() {
         }
         return r.json()
       })
-      .then(data => setDeployments(data || []))
+      .then(async (data) => {
+        // Fetch domains for all deployments
+        try {
+          const domainsRes = await fetch('/api/domains', { headers: authHeaders() })
+          const domains = await domainsRes.json()
+          const domainMap = {}
+          for (const d of domains) {
+            if (!domainMap[d.deployment_id]) domainMap[d.deployment_id] = []
+            domainMap[d.deployment_id].push(d)
+          }
+          setDeployments((data || []).map(d => ({ ...d, domains: domainMap[d.id] || [] })))
+        } catch {
+          setDeployments(data || [])
+        }
+      })
       .catch(() => setDeployments([]))
       .finally(() => setLoading(false))
   }, [connected])
@@ -42,6 +58,38 @@ export default function Dashboard() {
     if (hrs < 24) return `${hrs}h ago`
     const days = Math.floor(hrs / 24)
     return `${days}d ago`
+  }
+
+  const addDomain = async (deploymentId) => {
+    const domain = domainInputs[deploymentId]?.trim()
+    if (!domain) return
+    setDomainLoading(prev => ({ ...prev, [deploymentId]: true }))
+    try {
+      const res = await fetch('/api/domains', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ domain, deploymentId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setDeployments(prev => prev.map(d =>
+        d.id === deploymentId ? { ...d, domains: [...(d.domains || []), { domain, cname: data.cname }] } : d
+      ))
+      setDomainInputs(prev => ({ ...prev, [deploymentId]: '' }))
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setDomainLoading(prev => ({ ...prev, [deploymentId]: false }))
+    }
+  }
+
+  const removeDomain = async (domain, deploymentId) => {
+    try {
+      await fetch(`/api/domains/${domain}`, { method: 'DELETE', headers: authHeaders() })
+      setDeployments(prev => prev.map(d =>
+        d.id === deploymentId ? { ...d, domains: (d.domains || []).filter(dd => dd.domain !== domain) } : d
+      ))
+    } catch {}
   }
 
   const handleDelete = async (id) => {
@@ -157,6 +205,34 @@ export default function Dashboard() {
                   <button className="dash-action-btn dash-delete-btn" onClick={() => handleDelete(d.id)}>
                     Delete
                   </button>
+                </div>
+
+                {/* Custom domains */}
+                <div className="dash-domains">
+                  {(d.domains || []).map(dd => (
+                    <div key={dd.domain} className="dash-domain-row">
+                      <span className="dash-domain-name">{dd.domain}</span>
+                      <span className="dash-domain-cname">CNAME {dd.cname || 'shelkit.forestinfra.com'}</span>
+                      <button className="dash-domain-remove" onClick={() => removeDomain(dd.domain, d.id)}>&times;</button>
+                    </div>
+                  ))}
+                  <div className="dash-domain-add">
+                    <input
+                      type="text"
+                      placeholder="Add custom domain..."
+                      className="dash-domain-input"
+                      value={domainInputs[d.id] || ''}
+                      onChange={(e) => setDomainInputs(prev => ({ ...prev, [d.id]: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && addDomain(d.id)}
+                    />
+                    <button
+                      className="dash-domain-add-btn"
+                      onClick={() => addDomain(d.id)}
+                      disabled={domainLoading[d.id]}
+                    >
+                      {domainLoading[d.id] ? '...' : 'Add'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

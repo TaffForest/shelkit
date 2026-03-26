@@ -188,6 +188,8 @@ export function WalletProvider({ children }) {
   return (
     <AptosWalletAdapterProvider
       autoConnect={false}
+      dappConfig={{ network: 'testnet' }}
+      optInWallets={['Petra']}
       onError={(error) => {
         console.error('Wallet adapter error:', error?.message || error?.toString?.() || JSON.stringify(error))
       }}

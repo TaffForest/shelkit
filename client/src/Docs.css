@@ -1,0 +1,264 @@
+.docs-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.docs-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+  gap: 48px;
+}
+
+/* Sidebar */
+.docs-sidebar {
+  position: sticky;
+  top: 80px;
+  width: 220px;
+  flex-shrink: 0;
+  height: fit-content;
+}
+
+.docs-sidebar-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.docs-sidebar-link {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+
+.docs-sidebar-link:hover {
+  color: var(--text);
+}
+
+.docs-sidebar-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(139, 197, 63, 0.05);
+}
+
+/* Content */
+.docs-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-content section {
+  padding-bottom: 48px;
+  margin-bottom: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-content section:last-child {
+  border-bottom: none;
+}
+
+.docs-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.docs-content h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.docs-lead {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.docs-content p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.docs-content ul,
+.docs-content ol {
+  color: var(--text-muted);
+  line-height: 1.7;
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.docs-content li {
+  margin-bottom: 6px;
+}
+
+.docs-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.docs-content a:hover {
+  text-decoration: underline;
+}
+
+/* Inline code */
+.docs-inline-code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+/* Code blocks */
+.docs-codeblock {
+  position: relative;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.docs-codeblock-title {
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.docs-codeblock pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.docs-codeblock code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #c9d1d9;
+}
+
+.docs-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.docs-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+/* Steps */
+.docs-steps {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.docs-steps li {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.docs-steps li strong {
+  color: var(--text);
+}
+
+/* Tables */
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.docs-table th {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.docs-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+}
+
+.docs-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .docs-layout {
+    flex-direction: column;
+    padding-top: 70px;
+    gap: 0;
+  }
+
+  .docs-sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs-sidebar-title {
+    display: none;
+  }
+
+  .docs-sidebar-link {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .docs-sidebar-link.active {
+    border-left: none;
+    border-bottom-color: var(--accent);
+  }
+
+  .docs-content h1 {
+    font-size: 1.5rem;
+  }
+}

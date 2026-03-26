@@ -13,6 +13,7 @@ export default function Landing() {
           <div className="nav-links">
             <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }}>Features</a>
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>How it works</a>
+            <Link to="/docs">Docs</Link>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
         </div>
@@ -172,6 +173,7 @@ export default function Landing() {
           <div className="footer-links">
             <a href="#features">Features</a>
             <a href="#how-it-works">How it works</a>
+            <Link to="/docs">Docs</Link>
             <Link to="/app">Launch App</Link>
           </div>
           <div className="footer-copy">

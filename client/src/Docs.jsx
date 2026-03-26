@@ -7,6 +7,7 @@ const sections = [
   { id: 'cli', title: 'CLI Usage' },
   { id: 'github-deploy', title: 'GitHub Deploy' },
   { id: 'api', title: 'API Reference' },
+  { id: 'custom-domains', title: 'Custom Domains' },
   { id: 'wallet-auth', title: 'Wallet Auth' },
   { id: 'self-hosting', title: 'Self-Hosting' },
 ]
@@ -257,6 +258,63 @@ shelkit deploy ./my-app --build`}</CodeBlock>
             <h3>Serving</h3>
             <CodeBlock title="GET /deploy/:id">{`// Serves the deployed site (no auth required)
 // SPA fallback: unknown routes serve index.html`}</CodeBlock>
+          </section>
+
+          {/* Custom Domains */}
+          <section id="custom-domains">
+            <h1>Custom Domains</h1>
+            <p className="docs-lead">
+              Give your deployed sites a custom subdomain or bring your own domain.
+            </p>
+
+            <h3>Custom subdomains</h3>
+            <p>When deploying, you can choose a custom subdomain instead of a random ID:</p>
+            <ol className="docs-steps">
+              <li>Upload your ZIP or paste a GitHub URL.</li>
+              <li>Type your desired subdomain in the "Custom subdomain" field (e.g. <Code>my-app</Code>).</li>
+              <li>Your site will be live at <Code>https://my-app.shelkit.forestinfra.com</Code>.</li>
+            </ol>
+            <p>Subdomain rules: lowercase letters, numbers, and hyphens only. Must be unique.</p>
+
+            <h3>Custom domains (BYOD)</h3>
+            <p>Point your own domain to a ShelKit deployment:</p>
+
+            <h4>1. Add the domain in the dashboard</h4>
+            <p>Go to <strong>Deployments</strong>, find your deployment, and type your domain in the "Add custom domain" field (e.g. <Code>mysite.com</Code>).</p>
+
+            <h4>2. Configure DNS</h4>
+            <p>Add a CNAME record at your domain registrar:</p>
+            <table className="docs-table">
+              <thead><tr><th>Type</th><th>Name</th><th>Target</th></tr></thead>
+              <tbody>
+                <tr><td>CNAME</td><td><Code>mysite.com</Code> (or <Code>@</Code>)</td><td><Code>shelkit.forestinfra.com</Code></td></tr>
+              </tbody>
+            </table>
+            <p>DNS propagation can take up to 24 hours, but usually completes within minutes.</p>
+
+            <h4>3. Visit your domain</h4>
+            <p>Once DNS propagates, visiting <Code>mysite.com</Code> will serve your deployed site.</p>
+
+            <h3>API</h3>
+            <CodeBlock title="POST /api/domains">{`// Add a custom domain
+{
+  "domain": "mysite.com",
+  "deploymentId": "abc123"
+}
+
+// Response
+{
+  "success": true,
+  "domain": "mysite.com",
+  "cname": "shelkit.forestinfra.com"
+}`}</CodeBlock>
+
+            <CodeBlock title="DELETE /api/domains/:domain">{`// Remove a custom domain
+// Response
+{ "success": true }`}</CodeBlock>
+
+            <CodeBlock title="GET /api/domains">{`// List your custom domains
+// Response: Array of { domain, deployment_id, wallet, created_at }`}</CodeBlock>
           </section>
 
           {/* Wallet Auth */}

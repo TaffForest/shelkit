@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const EventEmitter = require('events');
 const { nanoid } = require('nanoid');
 const { extractZip } = require('../services/extractor');
-const { uploadFile, downloadFile, isRealAPI } = require('../services/shelpin');
+const { uploadFile, uploadFilesParallel, downloadFile, isRealAPI } = require('../services/shelpin');
 const { isBuildable, runBuild } = require('../services/builder');
 const { cloneRepo, isValidGithubUrl, parseGithubUrl } = require('../services/github');
 const store = require('../services/store');
@@ -111,13 +111,12 @@ async function handleDeploy(req, res) {
 
     log(`Pinning ${finalFiles.length} files to ShelPin...`);
 
-    // 4. Upload each file to ShelPin
-    const fileCIDs = {};
-    for (const relPath of finalFiles) {
-      const fullPath = path.join(servableRoot, relPath);
-      const cid = await uploadFile(fullPath);
-      fileCIDs[relPath] = cid;
-    }
+    // 4. Upload files in parallel (5 concurrent)
+    const fileEntries = finalFiles.map(relPath => ({
+      relPath,
+      fullPath: path.join(servableRoot, relPath),
+    }));
+    const fileCIDs = await uploadFilesParallel(fileEntries, 5, log);
 
     log('All files pinned');
 
@@ -521,12 +520,11 @@ async function handleGithubDeploy(req, res) {
 
     log(`Pinning ${finalFiles.length} files...`);
 
-    const fileCIDs = {};
-    for (const relPath of finalFiles) {
-      const fullPath = path.join(servableRoot, relPath);
-      const cid = await uploadFile(fullPath);
-      fileCIDs[relPath] = cid;
-    }
+    const fileEntries = finalFiles.map(relPath => ({
+      relPath,
+      fullPath: path.join(servableRoot, relPath),
+    }));
+    const fileCIDs = await uploadFilesParallel(fileEntries, 5, log);
 
     const allCIDs = Object.values(fileCIDs).sort().join(':');
     const rootCID = 'bafy_root_' + crypto.createHash('sha256').update(allCIDs).digest('hex').slice(0, 16);

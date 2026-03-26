@@ -119,8 +119,34 @@ async function uploadStub(filePath) {
   return `bafy_${hash}`;
 }
 
+/**
+ * Upload multiple files in parallel batches.
+ * Returns { [relPath]: blobName } mapping.
+ */
+async function uploadFilesParallel(files, concurrency = 5, log = () => {}) {
+  const results = {};
+  let completed = 0;
+  const total = files.length;
+
+  // Process in batches
+  for (let i = 0; i < files.length; i += concurrency) {
+    const batch = files.slice(i, i + concurrency);
+    const promises = batch.map(async ({ relPath, fullPath }) => {
+      const cid = await uploadFile(fullPath);
+      results[relPath] = cid;
+      completed++;
+      if (completed % 10 === 0 || completed === total) {
+        log(`Pinned ${completed}/${total} files`);
+      }
+    });
+    await Promise.all(promises);
+  }
+
+  return results;
+}
+
 function isRealAPI() {
   return !!SHELBY_PRIVATE_KEY;
 }
 
-module.exports = { uploadFile, downloadFile, isRealAPI };
+module.exports = { uploadFile, uploadFilesParallel, downloadFile, isRealAPI };

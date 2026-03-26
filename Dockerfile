@@ -10,12 +10,12 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-# Install git for GitHub clone feature
+# Install build tools FIRST (needed for better-sqlite3 and git for GitHub clone)
 RUN apk add --no-cache git python3 make g++
 
 # Copy server package and install deps
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy server code
 COPY server/ ./server/

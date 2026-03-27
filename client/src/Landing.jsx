@@ -13,6 +13,7 @@ export default function Landing() {
           <div className="nav-links">
             <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }}>Features</a>
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>How it works</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }) }}>Pricing</a>
             <Link to="/docs">Docs</Link>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
@@ -153,6 +154,42 @@ export default function Landing() {
               <code>2. Drop it on ShelKit</code>
               <code>3. Done. It's live.</code>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="pricing-section" id="pricing">
+        <h2 className="section-title">Pricing</h2>
+        <p className="section-subtitle">Free on testnet. Mainnet pricing coming soon.</p>
+
+        <div className="pricing-cards">
+          <div className="pricing-card">
+            <div className="pricing-tier">Testnet</div>
+            <div className="pricing-price">Free</div>
+            <div className="pricing-desc">Available now</div>
+            <ul className="pricing-features">
+              <li>Unlimited deploys</li>
+              <li>Server-side builds</li>
+              <li>GitHub integration</li>
+              <li>Custom subdomains</li>
+              <li>CLI access</li>
+            </ul>
+            <Link to="/app" className="btn-primary">Start deploying</Link>
+          </div>
+
+          <div className="pricing-card pricing-card-main">
+            <div className="pricing-tier">Mainnet</div>
+            <div className="pricing-price">TBD</div>
+            <div className="pricing-desc">Coming soon</div>
+            <ul className="pricing-features">
+              <li>Permanent decentralised storage</li>
+              <li>Custom domains</li>
+              <li>Production-grade hosting</li>
+              <li>Priority builds</li>
+              <li>Team collaboration</li>
+            </ul>
+            <span className="btn-outline btn-disabled">Coming soon</span>
           </div>
         </div>
       </section>

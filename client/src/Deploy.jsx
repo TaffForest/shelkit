@@ -188,7 +188,14 @@ export default function Deploy() {
 
             {walletError && <div className="error">{walletError}</div>}
 
-            {hasPetra ? (
+            {/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? (
+              <div className="no-petra">
+                <p>ShelKit requires the Petra wallet browser extension, which is available on desktop.</p>
+                <p style={{ marginTop: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  You can also use the <a href="https://petra.app/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Petra mobile app</a> and open ShelKit in its built-in browser.
+                </p>
+              </div>
+            ) : hasPetra ? (
               <button
                 className="connect-btn"
                 onClick={connect}

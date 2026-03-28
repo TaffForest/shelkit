@@ -8,11 +8,13 @@ const SHELBY_NETWORK = process.env.SHELBY_NETWORK || 'shelbynet';
 const SHELBY_FULLNODE_URL = process.env.SHELBY_FULLNODE_URL || 'https://api.shelbynet.shelby.xyz/v1';
 const SHELBY_INDEXER_URL = process.env.SHELBY_INDEXER_URL || 'https://api.shelbynet.aptoslabs.com/nocode/v1/public/cmforrguw0042s601fn71f9l2/v1/graphql';
 const BLOB_EXPIRY_DAYS = parseInt(process.env.BLOB_EXPIRY_DAYS || '365', 10);
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000;
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 2000;
+const TX_DELAY = 500; // delay between sequential uploads to avoid mempool conflicts
 
 let _shelbyClient = null;
 let _signer = null;
+const _uploadedBlobs = new Map(); // hash -> blobName, dedup within process lifetime
 
 /**
  * Lazy-init the Shelby SDK client (ESM import).
@@ -51,15 +53,17 @@ async function uploadFile(filePath) {
   return uploadStub(filePath);
 }
 
-/** Upload with retry logic */
+/** Upload with retry logic — handles mempool conflicts */
 async function uploadWithRetry(filePath, retries) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       return await uploadReal(filePath);
     } catch (err) {
+      const isMempool = err.message?.includes('mempool') || err.message?.includes('sequence_number');
       if (attempt === retries) throw err;
-      console.warn(`Shelby upload attempt ${attempt} failed: ${err.message}. Retrying...`);
-      await new Promise(r => setTimeout(r, RETRY_DELAY * attempt));
+      const delay = isMempool ? RETRY_DELAY * attempt * 2 : RETRY_DELAY * attempt;
+      console.warn(`Shelby upload attempt ${attempt}/${retries} failed: ${err.message?.slice(0, 100)}. Retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
     }
   }
 }
@@ -70,11 +74,18 @@ async function uploadReal(filePath) {
 
   const fileBuffer = fs.readFileSync(filePath);
   const fileName = path.basename(filePath);
-  const blobData = new Uint8Array(fileBuffer);
 
   // Blob name: shelkit/<hash>/<filename> — unique per file content
   const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex').slice(0, 12);
   const blobName = `shelkit/${hash}/${fileName}`;
+
+  // Skip if already uploaded (same content = same hash = same blob name)
+  if (_uploadedBlobs.has(hash)) {
+    console.log(`Shelby: skipping duplicate ${fileName} (${hash})`);
+    return _uploadedBlobs.get(hash);
+  }
+
+  const blobData = new Uint8Array(fileBuffer);
 
   // Expiration: N days from now in microseconds
   const expirationMicros = BigInt(Date.now() + BLOB_EXPIRY_DAYS * 24 * 60 * 60 * 1000) * 1000n;
@@ -85,6 +96,8 @@ async function uploadReal(filePath) {
     blobData,
     expirationMicros,
   });
+
+  _uploadedBlobs.set(hash, blobName);
 
   // Return the blob name as our "CID" — used to retrieve later
   return blobName;
@@ -120,7 +133,9 @@ async function uploadStub(filePath) {
 }
 
 /**
- * Upload multiple files in parallel batches.
+ * Upload multiple files.
+ * Uses sequential uploads for real Shelby (to avoid mempool conflicts),
+ * parallel batches for stub mode.
  * Returns { [relPath]: blobName } mapping.
  */
 async function uploadFilesParallel(files, concurrency = 5, log = () => {}) {
@@ -128,18 +143,34 @@ async function uploadFilesParallel(files, concurrency = 5, log = () => {}) {
   let completed = 0;
   const total = files.length;
 
-  // Process in batches
-  for (let i = 0; i < files.length; i += concurrency) {
-    const batch = files.slice(i, i + concurrency);
-    const promises = batch.map(async ({ relPath, fullPath }) => {
+  if (SHELBY_PRIVATE_KEY) {
+    // Real Shelby: sequential to avoid mempool tx conflicts
+    for (const { relPath, fullPath } of files) {
       const cid = await uploadFile(fullPath);
       results[relPath] = cid;
       completed++;
-      if (completed % 10 === 0 || completed === total) {
+      if (completed % 5 === 0 || completed === total) {
         log(`Pinned ${completed}/${total} files`);
       }
-    });
-    await Promise.all(promises);
+      // Small delay between transactions
+      if (completed < total) {
+        await new Promise(r => setTimeout(r, TX_DELAY));
+      }
+    }
+  } else {
+    // Stub mode: parallel is fine
+    for (let i = 0; i < files.length; i += concurrency) {
+      const batch = files.slice(i, i + concurrency);
+      const promises = batch.map(async ({ relPath, fullPath }) => {
+        const cid = await uploadFile(fullPath);
+        results[relPath] = cid;
+        completed++;
+        if (completed % 10 === 0 || completed === total) {
+          log(`Pinned ${completed}/${total} files`);
+        }
+      });
+      await Promise.all(promises);
+    }
   }
 
   return results;

@@ -116,7 +116,10 @@ async function handleDeploy(req, res) {
       relPath,
       fullPath: path.join(servableRoot, relPath),
     }));
-    const fileCIDs = await uploadFilesParallel(fileEntries, 5, log);
+    const onProgress = (done, total) => {
+      emitter.emit('progress', { done, total });
+    };
+    const fileCIDs = await uploadFilesParallel(fileEntries, 5, log, onProgress);
 
     log('All files pinned');
 
@@ -193,6 +196,10 @@ function streamLogs(req, res) {
     res.write(`data: ${JSON.stringify({ type: 'log', line })}\n\n`);
   };
 
+  const onProgress = ({ done, total }) => {
+    res.write(`data: ${JSON.stringify({ type: 'progress', done, total })}\n\n`);
+  };
+
   const onError = (message) => {
     res.write(`data: ${JSON.stringify({ type: 'error', message })}\n\n`);
   };
@@ -203,6 +210,7 @@ function streamLogs(req, res) {
   };
 
   emitter.on('log', onLog);
+  emitter.on('progress', onProgress);
   emitter.on('error', onError);
   emitter.on('done', onDone);
 

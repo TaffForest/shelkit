@@ -66,12 +66,27 @@ export default function Deploy() {
     setBuildPhase('uploading')
     addLog('Uploading ZIP...')
 
+    // Smooth creep animation for server-side processing phase
+    let creepInterval = null
+    const startCreep = (from, to, durationMs) => {
+      if (creepInterval) clearInterval(creepInterval)
+      const steps = 60
+      const stepSize = (to - from) / steps
+      const stepMs = durationMs / steps
+      let current = from
+      creepInterval = setInterval(() => {
+        current = Math.min(current + stepSize, to - 0.5)
+        setUploadProgress(Math.round(current))
+      }, stepMs)
+    }
+    const stopCreep = () => { if (creepInterval) { clearInterval(creepInterval); creepInterval = null } }
+
     try {
       const formData = new FormData()
       formData.append('file', file)
       if (customSubdomain.trim()) formData.append('subdomain', customSubdomain.trim().toLowerCase())
 
-      // Use XHR for upload progress tracking
+      // Phase 1: XHR upload (0–30%)
       const data = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.open('POST', '/api/deploy')
@@ -79,9 +94,16 @@ export default function Deploy() {
         Object.entries(hdrs).forEach(([k, v]) => xhr.setRequestHeader(k, v))
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) {
-            const pct = Math.round((e.loaded / e.total) * 100)
+            const pct = Math.round((e.loaded / e.total) * 30) // map to 0–30%
             setUploadProgress(pct)
           }
+        }
+        xhr.upload.onload = () => {
+          // Upload to server done — start smooth creep 30→95% while server pins to Shelby
+          setBuildPhase('pinning')
+          addLog('Upload complete — pinning to Shelby...')
+          const estimatedPinMs = Math.max(5000, (file.size / (1024 * 1024)) * 3000) // ~3s per MB
+          startCreep(30, 95, estimatedPinMs)
         }
         xhr.onload = () => {
           try {
@@ -94,9 +116,9 @@ export default function Deploy() {
         xhr.send(formData)
       })
 
+      // Phase 2 complete — snap to 100%
+      stopCreep()
       setUploadProgress(100)
-      setBuildPhase('pinning')
-      addLog('Upload complete — pinning to Shelby...')
 
       if (data.didBuild) {
         setBuildPhase('building')
@@ -115,6 +137,7 @@ export default function Deploy() {
       setResult(data)
       setFile(null)
     } catch (err) {
+      stopCreep()
       setError(err.message)
       addLog(`ERROR: ${err.message}`)
       setBuildPhase(null)
@@ -318,13 +341,13 @@ export default function Deploy() {
                   <div className="terminal-dots"><span /><span /><span /></div>
                   <span className="terminal-title">
                     {buildPhase === 'uploading' && `Uploading... ${uploadProgress}%`}
-                    {buildPhase === 'pinning' && 'Pinning to Shelby...'}
-                    {buildPhase === 'building' && 'Building project...'}
+                    {buildPhase === 'pinning' && `Pinning to Shelby... ${uploadProgress}%`}
+                    {buildPhase === 'building' && `Building project... ${uploadProgress}%`}
                     {buildPhase === 'done' && 'Complete'}
                     {!buildPhase && 'Build output'}
                   </span>
                 </div>
-                {buildPhase === 'uploading' && (
+                {(buildPhase === 'uploading' || buildPhase === 'pinning' || buildPhase === 'building') && (
                   <div className="upload-progress-bar">
                     <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
                   </div>

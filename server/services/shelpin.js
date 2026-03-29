@@ -138,21 +138,25 @@ async function uploadStub(filePath) {
  * parallel batches for stub mode.
  * Returns { [relPath]: blobName } mapping.
  */
-async function uploadFilesParallel(files, concurrency = 5, log = () => {}) {
+async function uploadFilesParallel(files, concurrency = 5, log = () => {}, onProgress = null) {
   const results = {};
   let completed = 0;
   const total = files.length;
+
+  const tick = (relPath) => {
+    completed++;
+    if (completed % 5 === 0 || completed === total) {
+      log(`Pinned ${completed}/${total} files`);
+    }
+    if (onProgress) onProgress(completed, total, relPath);
+  };
 
   if (SHELBY_PRIVATE_KEY) {
     // Real Shelby: sequential to avoid mempool tx conflicts
     for (const { relPath, fullPath } of files) {
       const cid = await uploadFile(fullPath);
       results[relPath] = cid;
-      completed++;
-      if (completed % 5 === 0 || completed === total) {
-        log(`Pinned ${completed}/${total} files`);
-      }
-      // Small delay between transactions
+      tick(relPath);
       if (completed < total) {
         await new Promise(r => setTimeout(r, TX_DELAY));
       }
@@ -164,10 +168,7 @@ async function uploadFilesParallel(files, concurrency = 5, log = () => {}) {
       const promises = batch.map(async ({ relPath, fullPath }) => {
         const cid = await uploadFile(fullPath);
         results[relPath] = cid;
-        completed++;
-        if (completed % 10 === 0 || completed === total) {
-          log(`Pinned ${completed}/${total} files`);
-        }
+        tick(relPath);
       });
       await Promise.all(promises);
     }

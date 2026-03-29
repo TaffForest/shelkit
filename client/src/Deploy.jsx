@@ -66,20 +66,33 @@ export default function Deploy() {
     setBuildPhase('uploading')
     addLog('Uploading ZIP...')
 
-    // Smooth creep animation for server-side processing phase
+    // Smooth progress animation
     let creepInterval = null
+    let currentProgress = 0
     const startCreep = (from, to, durationMs) => {
       if (creepInterval) clearInterval(creepInterval)
-      const steps = 60
+      currentProgress = from
+      const steps = 80
       const stepSize = (to - from) / steps
       const stepMs = durationMs / steps
-      let current = from
       creepInterval = setInterval(() => {
-        current = Math.min(current + stepSize, to - 0.5)
-        setUploadProgress(Math.round(current))
+        currentProgress = Math.min(currentProgress + stepSize, to - 0.5)
+        setUploadProgress(Math.round(currentProgress))
       }, stepMs)
     }
     const stopCreep = () => { if (creepInterval) { clearInterval(creepInterval); creepInterval = null } }
+    const animateTo100 = () => new Promise(resolve => {
+      stopCreep()
+      const start = currentProgress
+      const steps = 20
+      let step = 0
+      const interval = setInterval(() => {
+        step++
+        const pct = Math.round(start + ((100 - start) * step / steps))
+        setUploadProgress(pct)
+        if (step >= steps) { clearInterval(interval); resolve() }
+      }, 15)
+    })
 
     try {
       const formData = new FormData()
@@ -116,9 +129,8 @@ export default function Deploy() {
         xhr.send(formData)
       })
 
-      // Phase 2 complete — snap to 100%
-      stopCreep()
-      setUploadProgress(100)
+      // Phase 2 complete — smoothly animate to 100%
+      await animateTo100()
 
       if (data.didBuild) {
         setBuildPhase('building')
@@ -138,6 +150,7 @@ export default function Deploy() {
       setFile(null)
     } catch (err) {
       stopCreep()
+      setUploadProgress(0)
       setError(err.message)
       addLog(`ERROR: ${err.message}`)
       setBuildPhase(null)

@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [domainInputs, setDomainInputs] = useState({})
   const [domainLoading, setDomainLoading] = useState({})
   const [confirmDelete, setConfirmDelete] = useState(null) // deploymentId pending delete
+  const [previewId, setPreviewId] = useState(null) // deploymentId with open preview
   const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
@@ -203,6 +204,12 @@ export default function Dashboard() {
                   <a href={`/deploy/${d.id}`} target="_blank" rel="noopener noreferrer" className="dash-action-btn">
                     Visit
                   </a>
+                  <button
+                    className={`dash-action-btn ${previewId === d.id ? 'dash-preview-active' : ''}`}
+                    onClick={() => setPreviewId(previewId === d.id ? null : d.id)}
+                  >
+                    {previewId === d.id ? 'Close' : 'Preview'}
+                  </button>
                   {confirmDelete === d.id ? (
                     <div className="dash-confirm-delete">
                       <span>Sure?</span>
@@ -215,6 +222,21 @@ export default function Dashboard() {
                     </button>
                   )}
                 </div>
+
+                {/* Inline preview */}
+                {previewId === d.id && (
+                  <div className="dash-preview-panel">
+                    <div className="dash-preview-bar">
+                      <span className="dash-preview-url">{window.location.origin}/deploy/{d.id}</span>
+                    </div>
+                    <iframe
+                      src={`/deploy/${d.id}`}
+                      className="dash-preview-frame"
+                      title={`Preview ${d.id}`}
+                      sandbox="allow-scripts allow-same-origin"
+                    />
+                  </div>
+                )}
 
                 {/* Custom domains */}
                 <div className="dash-domains">

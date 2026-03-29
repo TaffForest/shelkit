@@ -464,6 +464,18 @@
   font-weight: 500;
 }
 
+.upload-progress-bar {
+  height: 3px;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
 .terminal-body {
   padding: 14px;
   max-height: 320px;

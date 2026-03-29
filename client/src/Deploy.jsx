@@ -26,6 +26,7 @@ export default function Deploy() {
   const [dragOver, setDragOver] = useState(false)
   const [logs, setLogs] = useState([])
   const [buildPhase, setBuildPhase] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const inputRef = useRef(null)
   const logEndRef = useRef(null)
 
@@ -61,6 +62,7 @@ export default function Deploy() {
     setError(null)
     setResult(null)
     setLogs([])
+    setUploadProgress(0)
     setBuildPhase('uploading')
     addLog('Uploading ZIP...')
 
@@ -69,17 +71,32 @@ export default function Deploy() {
       formData.append('file', file)
       if (customSubdomain.trim()) formData.append('subdomain', customSubdomain.trim().toLowerCase())
 
-      const res = await fetch('/api/deploy', {
-        method: 'POST',
-        headers: authHeaders(),
-        body: formData,
+      // Use XHR for upload progress tracking
+      const data = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', '/api/deploy')
+        const hdrs = authHeaders()
+        Object.entries(hdrs).forEach(([k, v]) => xhr.setRequestHeader(k, v))
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100)
+            setUploadProgress(pct)
+          }
+        }
+        xhr.onload = () => {
+          try {
+            const json = JSON.parse(xhr.responseText)
+            if (xhr.status >= 400) reject(new Error(json.error || 'Deployment failed'))
+            else resolve(json)
+          } catch { reject(new Error('Invalid server response')) }
+        }
+        xhr.onerror = () => reject(new Error('Network error'))
+        xhr.send(formData)
       })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Deployment failed')
-      }
+      setUploadProgress(100)
+      setBuildPhase('pinning')
+      addLog('Upload complete — pinning to Shelby...')
 
       if (data.didBuild) {
         setBuildPhase('building')
@@ -300,12 +317,18 @@ export default function Deploy() {
                 <div className="terminal-header">
                   <div className="terminal-dots"><span /><span /><span /></div>
                   <span className="terminal-title">
-                    {buildPhase === 'uploading' && 'Uploading...'}
+                    {buildPhase === 'uploading' && `Uploading... ${uploadProgress}%`}
+                    {buildPhase === 'pinning' && 'Pinning to Shelby...'}
                     {buildPhase === 'building' && 'Building project...'}
                     {buildPhase === 'done' && 'Complete'}
                     {!buildPhase && 'Build output'}
                   </span>
                 </div>
+                {buildPhase === 'uploading' && (
+                  <div className="upload-progress-bar">
+                    <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                )}
                 <div className="terminal-body">
                   {logs.map((line, i) => (
                     <div key={i} className={`terminal-line ${line.startsWith('ERROR') ? 'terminal-error' : ''} ${line.startsWith('---') ? 'terminal-heading' : ''}`}>

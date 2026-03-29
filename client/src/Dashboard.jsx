@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [page, setPage] = useState(1)
   const [domainInputs, setDomainInputs] = useState({})
   const [domainLoading, setDomainLoading] = useState({})
+  const [confirmDelete, setConfirmDelete] = useState(null) // deploymentId pending delete
   const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
@@ -93,7 +94,6 @@ export default function Dashboard() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this deployment? This cannot be undone.')) return
     try {
       const res = await fetch(`/api/deployments/${id}`, {
         method: 'DELETE',
@@ -103,6 +103,7 @@ export default function Dashboard() {
         setDeployments(prev => prev.filter(d => d.id !== id))
       }
     } catch {}
+    setConfirmDelete(null)
   }
 
   const copyToClipboard = (text) => {
@@ -202,9 +203,17 @@ export default function Dashboard() {
                   <a href={`/deploy/${d.id}`} target="_blank" rel="noopener noreferrer" className="dash-action-btn">
                     Visit
                   </a>
-                  <button className="dash-action-btn dash-delete-btn" onClick={() => handleDelete(d.id)}>
-                    Delete
-                  </button>
+                  {confirmDelete === d.id ? (
+                    <div className="dash-confirm-delete">
+                      <span>Sure?</span>
+                      <button className="dash-confirm-yes" onClick={() => handleDelete(d.id)}>Yes, delete</button>
+                      <button className="dash-confirm-no" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                    </div>
+                  ) : (
+                    <button className="dash-action-btn dash-delete-btn" onClick={() => setConfirmDelete(d.id)}>
+                      Delete
+                    </button>
+                  )}
                 </div>
 
                 {/* Custom domains */}

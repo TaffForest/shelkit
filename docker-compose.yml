@@ -17,7 +17,7 @@ services:
       # nginx-proxy picks these up automatically for routing + SSL
       - VIRTUAL_HOST=shelkit.forestinfra.com,*.shelkit.forestinfra.com
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_HOST=shelkit.forestinfra.com
+      - LETSENCRYPT_HOST=shelkit.forestinfra.com,*.shelkit.forestinfra.com
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-christopher.dowle@forestinfra.com}
     volumes:
       - shelkit-data:/app/data
@@ -59,6 +59,9 @@ services:
       - acme-state:/etc/acme.sh
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:-christopher.dowle@forestinfra.com}
+      # Cloudflare DNS challenge for wildcard certs
+      - CF_Key=${CF_KEY}
+      - CF_Email=${CF_EMAIL}
     depends_on:
       - nginx-proxy
     restart: unless-stopped

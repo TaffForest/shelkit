@@ -19,6 +19,7 @@ services:
       - VIRTUAL_PORT=3000
       - LETSENCRYPT_HOST=shelkit.forestinfra.com,*.shelkit.forestinfra.com
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-christopher.dowle@forestinfra.com}
+      - ACME_CHALLENGE=dns
     volumes:
       - shelkit-data:/app/data
       - shelkit-uploads:/app/server/uploads

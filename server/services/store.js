@@ -5,8 +5,8 @@ const path = require('path');
 /** Prepared statements for performance */
 const stmts = {
   insert: db.prepare(`
-    INSERT INTO deployments (id, wallet, root_cid, file_count, subdomain, framework, did_build, extract_dir, files_json, project_id, version)
-    VALUES (@id, @wallet, @rootCID, @fileCount, @subdomain, @framework, @didBuild, @extractDir, @filesJson, @projectId, @version)
+    INSERT INTO deployments (id, wallet, root_cid, file_count, subdomain, framework, did_build, extract_dir, files_json, project_id, version, expires_at)
+    VALUES (@id, @wallet, @rootCID, @fileCount, @subdomain, @framework, @didBuild, @extractDir, @filesJson, @projectId, @version, @expiresAt)
   `),
 
   get: db.prepare(`SELECT * FROM deployments WHERE id = ? AND deleted_at IS NULL`),
@@ -34,6 +34,9 @@ const stmts = {
     WHERE id = @id
   `),
 
+  incrementHits: db.prepare(`UPDATE deployments SET hits = hits + 1 WHERE id = ?`),
+  setExpiry: db.prepare(`UPDATE deployments SET expires_at = ? WHERE id = ?`),
+
   // Custom domains
   addDomain: db.prepare(`INSERT INTO custom_domains (domain, deployment_id, wallet) VALUES (?, ?, ?)`),
   removeDomain: db.prepare(`DELETE FROM custom_domains WHERE domain = ? AND wallet = ?`),
@@ -60,6 +63,8 @@ function formatDeployment(row) {
     version: row.version,
     createdAt: row.created_at,
     deletedAt: row.deleted_at,
+    hits: row.hits || 0,
+    expiresAt: row.expires_at || null,
   };
 }
 
@@ -76,6 +81,7 @@ function save(deployment) {
     filesJson: JSON.stringify(deployment.files || {}),
     projectId: deployment.projectId || null,
     version: deployment.version || 1,
+    expiresAt: deployment.expiresAt || null,
   });
 
   // Also save as version 1
@@ -175,6 +181,14 @@ function rollback(deploymentId, version) {
   return formatDeployment(stmts.get.get(deploymentId));
 }
 
+function incrementHits(id) {
+  stmts.incrementHits.run(id);
+}
+
+function setExpiry(id, expiresAt) {
+  stmts.setExpiry.run(expiresAt, id);
+}
+
 // Custom domain methods
 function addDomain(domain, deploymentId, wallet) {
   try {
@@ -208,4 +222,5 @@ module.exports = {
   softDelete, cleanupFiles,
   saveVersion, getVersions, rollback,
   addDomain, removeDomain, getDomainsByDeployment, getDomainsByWallet,
+  incrementHits, setExpiry,
 };

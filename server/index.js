@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 
 const {
   handleDeploy, serveDeploy, listDeployments, subdomainMiddleware, streamLogs,
-  deleteDeployment, listVersions, rollbackDeployment, handleGithubDeploy,
+  deleteDeployment, listVersions, rollbackDeployment, handleGithubDeploy, getBadge,
 } = require('./routes/deploy');
 const authRoutes = require('./routes/auth');
 const store = require('./services/store');
@@ -168,6 +168,9 @@ app.delete('/api/domains/:domain', requireAuth, (req, res) => {
   if (!removed) return res.status(404).json({ error: 'Domain not found' });
   res.json({ success: true });
 });
+
+// Public badge route
+app.get('/badge/:id', getBadge);
 
 // Public — serve deployed sites
 app.get('/deploy/:id', serveDeploy);

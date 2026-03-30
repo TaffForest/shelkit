@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useWallet } from './hooks/useWallet.jsx'
 import './Dashboard.css'
 
+const BASE_URL = 'https://shelkit.forestinfra.com'
+
 export default function Dashboard() {
   const { connected, address, authHeaders, disconnect } = useWallet()
   const navigate = useNavigate()
@@ -13,6 +15,8 @@ export default function Dashboard() {
   const [domainLoading, setDomainLoading] = useState({})
   const [confirmDelete, setConfirmDelete] = useState(null) // deploymentId pending delete
   const [previewId, setPreviewId] = useState(null) // deploymentId with open preview
+  const [expandedBadge, setExpandedBadge] = useState({}) // deploymentId => bool
+  const [copiedBadge, setCopiedBadge] = useState({}) // deploymentId+type => bool
   const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
@@ -111,6 +115,24 @@ export default function Dashboard() {
     navigator.clipboard.writeText(text)
   }
 
+  const formatExpiry = (expiresAt) => {
+    if (!expiresAt) return null
+    const d = new Date(expiresAt)
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+
+  const isExpiringSoon = (expiresAt) => {
+    if (!expiresAt) return false
+    const diff = new Date(expiresAt).getTime() - Date.now()
+    return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000
+  }
+
+  const copyBadge = (key, text) => {
+    navigator.clipboard.writeText(text)
+    setCopiedBadge(prev => ({ ...prev, [key]: true }))
+    setTimeout(() => setCopiedBadge(prev => ({ ...prev, [key]: false })), 2000)
+  }
+
   const shortAddr = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : ''
 
   if (!connected) return null
@@ -198,6 +220,16 @@ export default function Dashboard() {
                   </span>
                   <span className="dash-card-files">{d.fileCount} file{d.fileCount !== 1 ? 's' : ''}</span>
                   {d.version > 1 && <span className="dash-card-version">v{d.version}</span>}
+                  <span className="dash-card-hits" title="Total visits">&#128065; {d.hits || 0} visit{(d.hits || 0) !== 1 ? 's' : ''}</span>
+                  {d.expiresAt && (
+                    <span
+                      className="dash-card-expiry"
+                      style={{ color: isExpiringSoon(d.expiresAt) ? '#ff6b35' : '#f0a500' }}
+                      title={`Expires ${formatExpiry(d.expiresAt)}`}
+                    >
+                      Expires: {formatExpiry(d.expiresAt)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="dash-card-actions">
@@ -264,6 +296,55 @@ export default function Dashboard() {
                       {domainLoading[d.id] ? '...' : 'Add'}
                     </button>
                   </div>
+                </div>
+
+                {/* Badge section */}
+                <div className="dash-badge-section">
+                  <button
+                    className="dash-badge-toggle"
+                    onClick={() => setExpandedBadge(prev => ({ ...prev, [d.id]: !prev[d.id] }))}
+                  >
+                    {expandedBadge[d.id] ? 'Hide Badge' : 'Show Badge'}
+                  </button>
+                  {expandedBadge[d.id] && (() => {
+                    const siteUrl = d.subdomain
+                      ? `https://${d.subdomain}.shelkit.forestinfra.com`
+                      : `${BASE_URL}/deploy/${d.id}`
+                    const badgeUrl = `${BASE_URL}/badge/${d.id}`
+                    const markdownCode = `[![Deployed on ShelKit](${badgeUrl})](${siteUrl})`
+                    const htmlCode = `<a href="${siteUrl}"><img src="${badgeUrl}" alt="Deployed on ShelKit"/></a>`
+                    return (
+                      <div className="dash-badge-panel">
+                        <div className="dash-badge-preview">
+                          <img src={badgeUrl} alt="Deployed on ShelKit" />
+                        </div>
+                        <div className="dash-badge-code-row">
+                          <span className="dash-badge-format-label">Markdown</span>
+                          <div className="dash-badge-code-wrap">
+                            <code className="dash-badge-code">{markdownCode}</code>
+                            <button
+                              className="dash-badge-copy-btn"
+                              onClick={() => copyBadge(`${d.id}-md`, markdownCode)}
+                            >
+                              {copiedBadge[`${d.id}-md`] ? 'Copied!' : 'Copy'}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="dash-badge-code-row">
+                          <span className="dash-badge-format-label">HTML</span>
+                          <div className="dash-badge-code-wrap">
+                            <code className="dash-badge-code">{htmlCode}</code>
+                            <button
+                              className="dash-badge-copy-btn"
+                              onClick={() => copyBadge(`${d.id}-html`, htmlCode)}
+                            >
+                              {copiedBadge[`${d.id}-html`] ? 'Copied!' : 'Copy'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             ))}

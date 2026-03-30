@@ -72,4 +72,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_versions_created ON deploy_versions(created_at);
 `);
 
+// Migrations for new columns (safe to run multiple times)
+try { db.exec(`ALTER TABLE deployments ADD COLUMN hits INTEGER DEFAULT 0`) } catch {}
+try { db.exec(`ALTER TABLE deployments ADD COLUMN expires_at TEXT`) } catch {}
+
 module.exports = db;

@@ -162,6 +162,7 @@ async function handleDeploy(req, res) {
       wallet: req.wallet || null,
       createdAt: new Date().toISOString(),
       usingRealAPI: isRealAPI(),
+      expiresAt: req.body?.expiresAt || null,
     };
     store.save(deployment);
 
@@ -250,6 +251,14 @@ async function serveDeploy(req, res) {
     return res.status(451).send('<h1>451 Unavailable For Legal Reasons</h1><p>This deployment has been suspended due to a content policy violation.</p>');
   }
 
+  // Expiry check
+  if (deployment.expiresAt && new Date() > new Date(deployment.expiresAt)) {
+    return res.status(410).send(`<!DOCTYPE html><html><head><title>Deployment Expired</title><style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0a0a0a;color:#e8e8e8;text-align:center}h1{font-size:2rem;margin-bottom:8px}p{color:#888}a{color:#8BC53F}</style></head><body><div><h1>Deployment Expired</h1><p>This deployment has expired and is no longer available.</p><p><a href="https://shelkit.forestinfra.com">Deploy a new site on ShelKit</a></p></div></body></html>`);
+  }
+
+  // Increment hit counter (async, non-blocking)
+  store.incrementHits(deployment.id);
+
   let filePath = req.params[0] || 'index.html';
   if (filePath.endsWith('/')) filePath += 'index.html';
 
@@ -275,6 +284,8 @@ function listDeployments(req, res) {
     didBuild: d.didBuild,
     version: d.version || 1,
     createdAt: d.createdAt,
+    hits: d.hits || 0,
+    expiresAt: d.expiresAt || null,
   }));
   all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   res.json(all);
@@ -297,6 +308,14 @@ async function subdomainMiddleware(req, res, next) {
   }
 
   if (!deployment) return next();
+
+  // Expiry check
+  if (deployment.expiresAt && new Date() > new Date(deployment.expiresAt)) {
+    return res.status(410).send(`<!DOCTYPE html><html><head><title>Deployment Expired</title><style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0a0a0a;color:#e8e8e8;text-align:center}h1{font-size:2rem;margin-bottom:8px}p{color:#888}a{color:#8BC53F}</style></head><body><div><h1>Deployment Expired</h1><p>This deployment has expired and is no longer available.</p><p><a href="https://shelkit.forestinfra.com">Deploy a new site on ShelKit</a></p></div></body></html>`);
+  }
+
+  // Increment hit counter
+  store.incrementHits(deployment.id);
 
   let filePath = req.path.slice(1) || 'index.html';
   if (filePath.endsWith('/')) filePath += 'index.html';
@@ -716,7 +735,45 @@ async function handleGithubDeploy(req, res) {
   }
 }
 
+/** GET /badge/:id — serve deployment badge SVG */
+function getBadge(req, res) {
+  const deployment = store.get(req.params.id);
+  const label = 'Deployed on';
+  const value = 'ShelKit';
+  const labelW = 88;
+  const valueW = 62;
+  const totalW = labelW + valueW;
+  const height = 20;
+  const exists = !!deployment;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${height}" role="img" aria-label="${label} ${value}">
+  <title>${label} ${value}</title>
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="${totalW}" height="${height}" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="${labelW}" height="${height}" fill="#555"/>
+    <rect x="${labelW}" width="${valueW}" height="${height}" fill="${exists ? '#8BC53F' : '#9f9f9f'}"/>
+    <rect width="${totalW}" height="${height}" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+    <text x="${labelW / 2 + 1}" y="15" fill="#010101" fill-opacity=".3">${label}</text>
+    <text x="${labelW / 2}" y="14">${label}</text>
+    <text x="${labelW + valueW / 2 + 1}" y="15" fill="#010101" fill-opacity=".3">${value}</text>
+    <text x="${labelW + valueW / 2}" y="14">${value}</text>
+  </g>
+</svg>`;
+
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Cache-Control', 'no-cache, no-store');
+  res.send(svg);
+}
+
 module.exports = {
   handleDeploy, serveDeploy, listDeployments, subdomainMiddleware, streamLogs,
-  deleteDeployment, listVersions, rollbackDeployment, handleGithubDeploy,
+  deleteDeployment, listVersions, rollbackDeployment, handleGithubDeploy, getBadge,
 };

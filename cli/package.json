@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "ShelKit CLI — deploy to the decentralised web",
   "bin": {
-    "shelkit": "./index.js"
+    "shelkit": "index.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",

@@ -20,6 +20,7 @@ export default function Deploy() {
   const [file, setFile] = useState(null)
   const [repoUrl, setRepoUrl] = useState('')
   const [customSubdomain, setCustomSubdomain] = useState('')
+  const [expiry, setExpiry] = useState('')
   const [deploying, setDeploying] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -98,6 +99,11 @@ export default function Deploy() {
       const formData = new FormData()
       formData.append('file', file)
       if (customSubdomain.trim()) formData.append('subdomain', customSubdomain.trim().toLowerCase())
+      if (expiry) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + parseInt(expiry));
+        formData.append('expiresAt', expiresAt.toISOString());
+      }
 
       // Phase 1: XHR upload (0–30%)
       const data = await new Promise((resolve, reject) => {
@@ -394,6 +400,23 @@ export default function Deploy() {
                   />
                   <span className="subdomain-suffix">.shelkit.forestinfra.com</span>
                 </div>
+              </div>
+            )}
+
+            {!deploying && !result && (file || tab === 'github') && (
+              <div className="deploy-field fade-in">
+                <label className="deploy-label">Expiry</label>
+                <select
+                  className="deploy-input"
+                  value={expiry}
+                  onChange={e => setExpiry(e.target.value)}
+                >
+                  <option value="">Never expires</option>
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                  <option value="30">30 days</option>
+                  <option value="90">90 days</option>
+                </select>
               </div>
             )}
 

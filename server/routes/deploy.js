@@ -139,8 +139,14 @@ async function handleDeploy(req, res) {
     const allCIDs = Object.values(fileCIDs).sort().join(':');
     const rootCID = 'bafy_root_' + crypto.createHash('sha256').update(allCIDs).digest('hex').slice(0, 16);
 
-    // 6. Generate subdomain
-    const subdomain = req.body?.subdomain || deploymentId.toLowerCase();
+    // 6. Generate subdomain — auto-suffix if requested one is taken
+    let subdomain = (req.body?.subdomain || deploymentId).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const requestedSubdomain = subdomain;
+    if (store.findBySubdomain(subdomain)) {
+      // Subdomain taken — append random suffix
+      subdomain = `${subdomain}-${nanoid(4).toLowerCase()}`;
+      log(`Subdomain '${requestedSubdomain}' already taken — using '${subdomain}' instead`);
+    }
 
     // 7. Store deployment (with wallet address from auth)
     const deployment = {
@@ -665,7 +671,11 @@ async function handleGithubDeploy(req, res) {
     const allCIDs = Object.values(fileCIDs).sort().join(':');
     const rootCID = 'bafy_root_' + crypto.createHash('sha256').update(allCIDs).digest('hex').slice(0, 16);
 
-    const subdomain = req.body?.subdomain || deploymentId.toLowerCase();
+    let subdomain = (req.body?.subdomain || deploymentId).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    if (store.findBySubdomain(subdomain)) {
+      subdomain = `${subdomain}-${nanoid(4).toLowerCase()}`;
+      log(`Subdomain taken — using '${subdomain}' instead`);
+    }
 
     const deployment = {
       id: deploymentId,

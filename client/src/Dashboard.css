@@ -472,3 +472,123 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Gallery toggle */
+.dash-gallery-section {
+  padding: 12px 0 0;
+  border-top: 1px solid #1a1a1a;
+  margin-top: 12px;
+}
+
+.dash-gallery-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dash-gallery-label {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.dash-gallery-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.dash-gallery-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.dash-gallery-add {
+  background: #8BC53F;
+  color: #000;
+}
+.dash-gallery-add:hover { opacity: 0.85; }
+
+.dash-gallery-remove {
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #2a2a2a;
+}
+.dash-gallery-remove:hover { color: #e8e8e8; }
+
+/* Gallery modal (inline) */
+.dash-gallery-modal {
+  margin-top: 12px;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.dash-gallery-modal-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 0 0 4px;
+}
+
+.dash-gallery-modal-hint {
+  font-size: 0.78rem;
+  color: #666;
+  margin: 0 0 14px;
+}
+.dash-gallery-modal-hint a { color: #8BC53F; }
+
+.dash-gallery-modal-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+.dash-gallery-modal-label span { color: #555; font-size: 0.72rem; }
+
+.dash-gallery-modal-input {
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  color: #e8e8e8;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.dash-gallery-modal-input:focus { border-color: #8BC53F; }
+
+.dash-gallery-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.dash-gallery-cancel {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.dash-gallery-cancel:hover { color: #e8e8e8; }
+
+.dash-gallery-confirm {
+  background: #8BC53F;
+  color: #000;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dash-gallery-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+.dash-gallery-confirm:not(:disabled):hover { opacity: 0.85; }

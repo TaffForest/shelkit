@@ -17,6 +17,7 @@ const healthRoutes = require('./routes/health');
 const requireAuth = require('./middleware/requireAuth');
 const adminRoutes = require('./routes/admin');
 const abuseRoutes = require('./routes/abuse');
+const galleryRoutes = require('./routes/gallery');
 const { isWalletSuspended, isDeploymentSuspended } = require('./services/contentPolicy');
 
 const app = express();
@@ -84,6 +85,9 @@ app.use('/health', healthRoutes);
 
 // Public abuse reporting
 app.use('/api/report', abuseRoutes);
+
+// Public gallery
+app.use('/api/gallery', galleryRoutes);
 
 // Admin routes (protected by ADMIN_SECRET header)
 app.use('/api/admin', adminRoutes);

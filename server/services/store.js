@@ -37,6 +37,10 @@ const stmts = {
   incrementHits: db.prepare(`UPDATE deployments SET hits = hits + 1 WHERE id = ?`),
   setExpiry: db.prepare(`UPDATE deployments SET expires_at = ? WHERE id = ?`),
 
+  // Gallery
+  listPublic: db.prepare(`SELECT * FROM deployments WHERE is_public = 1 AND deleted_at IS NULL AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY hits DESC, created_at DESC LIMIT 100`),
+  setPublic: db.prepare(`UPDATE deployments SET is_public = @isPublic, title = @title, description = @description WHERE id = @id AND wallet = @wallet`),
+
   // Custom domains
   addDomain: db.prepare(`INSERT INTO custom_domains (domain, deployment_id, wallet) VALUES (?, ?, ?)`),
   removeDomain: db.prepare(`DELETE FROM custom_domains WHERE domain = ? AND wallet = ?`),
@@ -65,6 +69,9 @@ function formatDeployment(row) {
     deletedAt: row.deleted_at,
     hits: row.hits || 0,
     expiresAt: row.expires_at || null,
+    isPublic: !!row.is_public,
+    title: row.title || null,
+    description: row.description || null,
   };
 }
 
@@ -189,6 +196,15 @@ function setExpiry(id, expiresAt) {
   stmts.setExpiry.run(expiresAt, id);
 }
 
+function listPublic() {
+  return stmts.listPublic.all().map(formatDeployment);
+}
+
+function setPublic(id, wallet, isPublic, title, description) {
+  const result = stmts.setPublic.run({ id, wallet, isPublic: isPublic ? 1 : 0, title: title || null, description: description || null });
+  return result.changes > 0;
+}
+
 // Custom domain methods
 function addDomain(domain, deploymentId, wallet) {
   try {
@@ -223,4 +239,5 @@ module.exports = {
   saveVersion, getVersions, rollback,
   addDomain, removeDomain, getDomainsByDeployment, getDomainsByWallet,
   incrementHits, setExpiry,
+  listPublic, setPublic,
 };

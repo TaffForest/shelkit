@@ -15,6 +15,7 @@ export default function Landing() {
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>How it works</a>
             <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }) }}>Pricing</a>
             <Link to="/docs">Docs</Link>
+            <Link to="/gallery">Gallery</Link>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
         </div>

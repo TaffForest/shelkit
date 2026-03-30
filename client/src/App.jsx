@@ -5,6 +5,7 @@ import Landing from './Landing'
 import Deploy from './Deploy'
 import Dashboard from './Dashboard'
 import Docs from './Docs'
+import Gallery from './Gallery'
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/app" element={<Deploy />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/docs" element={<Docs />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

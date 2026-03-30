@@ -75,5 +75,9 @@ db.exec(`
 // Migrations for new columns (safe to run multiple times)
 try { db.exec(`ALTER TABLE deployments ADD COLUMN hits INTEGER DEFAULT 0`) } catch {}
 try { db.exec(`ALTER TABLE deployments ADD COLUMN expires_at TEXT`) } catch {}
+try { db.exec(`ALTER TABLE deployments ADD COLUMN is_public INTEGER DEFAULT 0`) } catch {}
+try { db.exec(`ALTER TABLE deployments ADD COLUMN title TEXT`) } catch {}
+try { db.exec(`ALTER TABLE deployments ADD COLUMN description TEXT`) } catch {}
+try { db.exec(`CREATE INDEX IF NOT EXISTS idx_deployments_public ON deployments(is_public)`) } catch {}
 
 module.exports = db;

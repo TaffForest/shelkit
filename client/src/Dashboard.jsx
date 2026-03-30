@@ -5,6 +5,47 @@ import './Dashboard.css'
 
 const BASE_URL = 'https://shelkit.forestinfra.com'
 
+function GalleryModal({ deployment, loading, onConfirm, onCancel }) {
+  const [title, setTitle] = useState(deployment.title || deployment.subdomain || '')
+  const [description, setDescription] = useState(deployment.description || '')
+  return (
+    <div className="dash-gallery-modal">
+      <p className="dash-gallery-modal-title">Add to Public Gallery</p>
+      <p className="dash-gallery-modal-hint">Your site will appear at <a href="/gallery" target="_blank">/gallery</a> for the community to discover.</p>
+      <label className="dash-gallery-modal-label">
+        Title <span>(60 chars max)</span>
+        <input
+          className="dash-gallery-modal-input"
+          value={title}
+          maxLength={60}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="My awesome site"
+        />
+      </label>
+      <label className="dash-gallery-modal-label">
+        Description <span>(optional, 200 chars max)</span>
+        <input
+          className="dash-gallery-modal-input"
+          value={description}
+          maxLength={200}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="A short description of what your site does"
+        />
+      </label>
+      <div className="dash-gallery-modal-actions">
+        <button className="dash-gallery-cancel" onClick={onCancel}>Cancel</button>
+        <button
+          className="dash-gallery-confirm"
+          disabled={loading || !title.trim()}
+          onClick={() => onConfirm(title.trim(), description.trim())}
+        >
+          {loading ? 'Publishing…' : 'Publish to Gallery'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { connected, address, authHeaders, disconnect } = useWallet()
   const navigate = useNavigate()
@@ -17,6 +58,8 @@ export default function Dashboard() {
   const [previewId, setPreviewId] = useState(null) // deploymentId with open preview
   const [expandedBadge, setExpandedBadge] = useState({}) // deploymentId => bool
   const [copiedBadge, setCopiedBadge] = useState({}) // deploymentId+type => bool
+  const [galleryLoading, setGalleryLoading] = useState({}) // deploymentId => bool
+  const [galleryModal, setGalleryModal] = useState(null) // deploymentId with open modal
   const PER_PAGE = 10
 
   // Redirect to deploy page if not connected
@@ -131,6 +174,26 @@ export default function Dashboard() {
     navigator.clipboard.writeText(text)
     setCopiedBadge(prev => ({ ...prev, [key]: true }))
     setTimeout(() => setCopiedBadge(prev => ({ ...prev, [key]: false })), 2000)
+  }
+
+  const handleGalleryToggle = async (deployment, isPublic, title, description) => {
+    setGalleryLoading(prev => ({ ...prev, [deployment.id]: true }))
+    try {
+      const res = await fetch(`/api/gallery/${deployment.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ public: isPublic, title, description }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setDeployments(prev => prev.map(d =>
+          d.id === deployment.id ? { ...d, isPublic, title, description } : d
+        ))
+        setGalleryModal(null)
+      }
+    } finally {
+      setGalleryLoading(prev => ({ ...prev, [deployment.id]: false }))
+    }
   }
 
   const shortAddr = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : ''
@@ -296,6 +359,41 @@ export default function Dashboard() {
                       {domainLoading[d.id] ? '...' : 'Add'}
                     </button>
                   </div>
+                </div>
+
+                {/* Gallery toggle */}
+                <div className="dash-gallery-section">
+                  <div className="dash-gallery-row">
+                    <span className="dash-gallery-label">
+                      {d.isPublic ? '🌐 Listed in gallery' : '🔒 Private'}
+                    </span>
+                    {d.isPublic ? (
+                      <button
+                        className="dash-gallery-btn dash-gallery-remove"
+                        disabled={galleryLoading[d.id]}
+                        onClick={() => handleGalleryToggle(d, false, d.title, d.description)}
+                      >
+                        {galleryLoading[d.id] ? '...' : 'Remove from gallery'}
+                      </button>
+                    ) : (
+                      <button
+                        className="dash-gallery-btn dash-gallery-add"
+                        onClick={() => setGalleryModal(d.id)}
+                      >
+                        Add to gallery
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Gallery modal */}
+                  {galleryModal === d.id && (
+                    <GalleryModal
+                      deployment={d}
+                      loading={galleryLoading[d.id]}
+                      onConfirm={(title, description) => handleGalleryToggle(d, true, title, description)}
+                      onCancel={() => setGalleryModal(null)}
+                    />
+                  )}
                 </div>
 
                 {/* Badge section */}

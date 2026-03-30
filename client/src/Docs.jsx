@@ -9,6 +9,7 @@ const sections = [
   { id: 'api', title: 'API Reference' },
   { id: 'custom-domains', title: 'Custom Domains' },
   { id: 'wallet-auth', title: 'Wallet Auth' },
+  { id: 'safety', title: 'Safety & Moderation' },
   { id: 'self-hosting', title: 'Self-Hosting' },
 ]
 
@@ -125,6 +126,9 @@ export default function Docs() {
             <p>
               You can also upload raw source code with a <Code>package.json</Code> — ShelKit will run <Code>npm install</Code> and <Code>npm run build</Code> on the server.
             </p>
+
+            <h3>File size limit</h3>
+            <p>ZIP uploads are accepted up to <strong>100 MB</strong>. Most production frontend builds are well under 10 MB.</p>
           </section>
 
           {/* CLI Usage */}
@@ -274,7 +278,7 @@ shelkit deploy ./my-app --build`}</CodeBlock>
               <li>Type your desired subdomain in the "Custom subdomain" field (e.g. <Code>my-app</Code>).</li>
               <li>Your site will be live at <Code>https://my-app.shelkit.forestinfra.com</Code>.</li>
             </ol>
-            <p>Subdomain rules: lowercase letters, numbers, and hyphens only. Must be unique.</p>
+            <p>Subdomain rules: lowercase letters, numbers, and hyphens only. If your chosen subdomain is already taken, ShelKit will automatically append a short suffix (e.g. <Code>my-app-x3k2</Code>) rather than throwing an error.</p>
 
             <h3>Custom domains (BYOD)</h3>
             <p>Point your own domain to a ShelKit deployment:</p>
@@ -334,14 +338,56 @@ shelkit deploy ./my-app --build`}</CodeBlock>
 
             <h3>Requirements</h3>
             <ul>
-              <li><a href="https://petra.app/" target="_blank" rel="noopener noreferrer">Petra wallet</a> browser extension</li>
+              <li><a href="https://petra.app/" target="_blank" rel="noopener noreferrer">Petra wallet</a> browser extension (desktop)</li>
               <li>Wallet set to <strong>Testnet</strong> network</li>
             </ul>
+
+            <h3>Mobile</h3>
+            <p>
+              On mobile, the Petra browser extension is not available. Instead, open ShelKit inside the <strong>Petra mobile app's built-in browser</strong> — the wallet connect button will work there automatically.
+            </p>
 
             <h3>Token storage</h3>
             <p>
               The JWT is stored in <Code>localStorage</Code> under <Code>shelkit_token</Code>.
               It expires after 24 hours. Disconnect your wallet to clear the token.
+            </p>
+          </section>
+
+          {/* Safety & Moderation */}
+          <section id="safety">
+            <h1>Safety &amp; Moderation</h1>
+            <p className="docs-lead">
+              ShelKit includes built-in safeguards to keep the platform safe for everyone.
+            </p>
+
+            <h3>Content policy</h3>
+            <p>All uploads are scanned before deployment. The following are blocked:</p>
+            <ul>
+              <li>Executable files (<Code>.exe</Code>, <Code>.sh</Code>, <Code>.php</Code>, <Code>.py</Code>, etc.)</li>
+              <li>Known malicious filenames (webshells, backdoors, etc.)</li>
+              <li>Files that trigger antivirus heuristics</li>
+            </ul>
+            <p>Deployments that violate the content policy are rejected immediately and never pinned to Shelby.</p>
+
+            <h3>Reporting abuse</h3>
+            <p>
+              Every deployed site includes a discreet abuse reporting banner. If you encounter a site that violates the content policy, click <strong>"Report"</strong> or use the API directly:
+            </p>
+            <CodeBlock title="POST /api/report">{`{
+  "deploymentId": "abc123",
+  "reason": "malware" // or: "phishing", "illegal", "spam", "other"
+}`}</CodeBlock>
+            <p>Reports are rate-limited to 5 per hour per IP. Repeated abuse reports trigger manual review.</p>
+
+            <h3>Account &amp; deployment suspension</h3>
+            <p>
+              Wallets or individual deployments found to be in breach of the content policy can be suspended by admins. Suspended deployments return a <Code>403 Suspended</Code> response. Suspended wallets cannot create new deployments.
+            </p>
+
+            <h3>npm audit</h3>
+            <p>
+              When ShelKit runs a server-side build, it performs an <Code>npm audit</Code> after install. Builds with <strong>critical</strong> severity vulnerabilities are blocked. High and below produce a warning but do not block the deploy.
             </p>
           </section>
 
@@ -374,6 +420,7 @@ SHELBY_NETWORK=shelbynet
 BLOB_EXPIRY_DAYS=365`}</CodeBlock>
 
             <h3>3. DNS records</h3>
+            <p>You need both an A record for the root domain and a wildcard A record for subdomains:</p>
             <table className="docs-table">
               <thead><tr><th>Type</th><th>Name</th><th>Target</th></tr></thead>
               <tbody>
@@ -382,20 +429,19 @@ BLOB_EXPIRY_DAYS=365`}</CodeBlock>
               </tbody>
             </table>
 
-            <h3>4. Deploy</h3>
+            <h3>4. Cloudflare DNS credentials (for wildcard SSL)</h3>
+            <p>
+              Wildcard certs (<Code>*.shelkit.yourdomain.com</Code>) require DNS-01 challenge. ShelKit uses the Cloudflare API to set DNS TXT records automatically. Add these to your <Code>.env</Code>:
+            </p>
+            <CodeBlock title=".env">{`CF_KEY=your-cloudflare-global-api-key
+CF_EMAIL=your-cloudflare-account-email`}</CodeBlock>
+            <p>Your Cloudflare Global API Key is found under <strong>My Profile → API Tokens → Global API Key</strong>. The domain must be managed by this Cloudflare account.</p>
+
+            <h3>5. Deploy</h3>
             <CodeBlock title="Terminal">{`docker compose up -d --build`}</CodeBlock>
-
-            <h3>5. SSL certificate</h3>
-            <CodeBlock title="Terminal">{`docker compose stop nginx
-
-docker run --rm -p 80:80 \\
-  -v shelkit_letsencrypt:/etc/letsencrypt \\
-  certbot/certbot certonly \\
-  --standalone --non-interactive --agree-tos \\
-  --email you@example.com \\
-  -d shelkit.yourdomain.com
-
-docker compose start nginx`}</CodeBlock>
+            <p>
+              SSL certificates are issued automatically by Let's Encrypt via <Code>nginx-proxy</Code> and <Code>acme-companion</Code>. Both the root domain and wildcard are covered — no manual cert steps required.
+            </p>
           </section>
         </main>
       </div>

@@ -119,6 +119,10 @@ export default function Landing() {
             <h3>Zero config</h3>
             <p>No YAML files. No build scripts. No environment variables to set up.</p>
           </div>
+          <div className="feature-card">
+            <h3>Bring your own domain</h3>
+            <p>Point any domain you own to a ShelKit deployment. Add a CNAME and you're done — SSL included.</p>
+          </div>
         </div>
       </section>
 
@@ -173,6 +177,7 @@ export default function Landing() {
               <li>Server-side builds</li>
               <li>GitHub integration</li>
               <li>Custom subdomains</li>
+              <li>Bring your own domain</li>
               <li>CLI access</li>
             </ul>
             <Link to="/app" className="btn-primary">Start deploying</Link>
@@ -184,10 +189,10 @@ export default function Landing() {
             <div className="pricing-desc">Coming soon</div>
             <ul className="pricing-features">
               <li>Permanent decentralised storage</li>
-              <li>Custom domains</li>
               <li>Production-grade hosting</li>
               <li>Priority builds</li>
               <li>Team collaboration</li>
+              <li>Advanced analytics</li>
             </ul>
             <span className="btn-outline btn-disabled">Coming soon</span>
           </div>

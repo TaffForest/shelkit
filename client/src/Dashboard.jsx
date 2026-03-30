@@ -262,12 +262,16 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dash-card-url">
-                  <a href={`/deploy/${d.id}`} target="_blank" rel="noopener noreferrer">
-                    {window.location.origin}/deploy/{d.id}
+                  <a
+                    href={d.subdomain ? `https://${d.subdomain}.shelkit.forestinfra.com` : `${BASE_URL}/deploy/${d.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {d.subdomain ? `${d.subdomain}.shelkit.forestinfra.com` : `shelkit.forestinfra.com/deploy/${d.id}`}
                   </a>
                   <button
                     className="copy-btn"
-                    onClick={() => copyToClipboard(`${window.location.origin}/deploy/${d.id}`)}
+                    onClick={() => copyToClipboard(d.subdomain ? `https://${d.subdomain}.shelkit.forestinfra.com` : `${BASE_URL}/deploy/${d.id}`)}
                     title="Copy URL"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -296,7 +300,12 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dash-card-actions">
-                  <a href={`/deploy/${d.id}`} target="_blank" rel="noopener noreferrer" className="dash-action-btn">
+                  <a
+                    href={d.subdomain ? `https://${d.subdomain}.shelkit.forestinfra.com` : `${BASE_URL}/deploy/${d.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dash-action-btn"
+                  >
                     Visit
                   </a>
                   <button
@@ -322,13 +331,14 @@ export default function Dashboard() {
                 {previewId === d.id && (
                   <div className="dash-preview-panel">
                     <div className="dash-preview-bar">
-                      <span className="dash-preview-url">{window.location.origin}/deploy/{d.id}</span>
+                      <span className="dash-preview-url">
+                        {d.subdomain ? `${d.subdomain}.shelkit.forestinfra.com` : `shelkit.forestinfra.com/deploy/${d.id}`}
+                      </span>
                     </div>
                     <iframe
-                      src={`/deploy/${d.id}`}
+                      src={d.subdomain ? `https://${d.subdomain}.shelkit.forestinfra.com` : `${BASE_URL}/deploy/${d.id}`}
                       className="dash-preview-frame"
                       title={`Preview ${d.id}`}
-                      sandbox="allow-scripts allow-same-origin"
                     />
                   </div>
                 )}

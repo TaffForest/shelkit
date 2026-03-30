@@ -321,6 +321,15 @@ function resolveFilePath(deployment, filePath) {
     if (fs.existsSync(indexPath)) return 'index.html';
   }
 
+  // No index.html — serve the first HTML file found
+  const firstHtml = Object.keys(files).find(f => f.endsWith('.html') || f.endsWith('.htm'));
+  if (firstHtml) return firstHtml;
+
+  if (deployment.extractDir) {
+    const allFiles = fs.readdirSync(deployment.extractDir).filter(f => f.endsWith('.html') || f.endsWith('.htm'));
+    if (allFiles.length > 0) return allFiles[0];
+  }
+
   return null;
 }
 

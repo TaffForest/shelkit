@@ -190,6 +190,30 @@ async function runBuild(projectDir, onLog = () => {}) {
 
     await runCommand(pm, installArgs, projectDir, onLog);
 
+    // npm audit — run after install, warn but don't block on vulnerabilities
+    if (pm === 'npm') {
+      onLog('');
+      onLog('--- Running npm audit ---');
+      try {
+        await runCommand('npm', ['audit', '--audit-level=critical', '--json'], projectDir, (line) => {
+          try {
+            const data = JSON.parse(line);
+            if (data.metadata?.vulnerabilities) {
+              const v = data.metadata.vulnerabilities;
+              onLog(`Audit: ${v.total || 0} vulnerabilities (critical: ${v.critical || 0}, high: ${v.high || 0})`);
+              if ((v.critical || 0) > 0) {
+                onLog('WARNING: Critical vulnerabilities found in dependencies');
+              }
+            }
+          } catch {
+            if (line.trim()) onLog(line);
+          }
+        });
+      } catch {
+        onLog('Audit completed with warnings (non-blocking)');
+      }
+    }
+
     onLog('');
     onLog('--- Building project ---');
 

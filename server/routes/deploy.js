@@ -8,6 +8,7 @@ const { uploadFile, uploadFilesParallel, downloadFile, isRealAPI } = require('..
 const { isBuildable, runBuild } = require('../services/builder');
 const { cloneRepo, isValidGithubUrl, parseGithubUrl } = require('../services/github');
 const store = require('../services/store');
+const { scanFiles, isDeploymentSuspended } = require('../services/contentPolicy');
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
@@ -56,6 +57,17 @@ async function handleDeploy(req, res) {
     }
 
     log(`Extracted ${extractedFiles.length} files`);
+
+    // Content policy scan
+    log('Running content policy check...');
+    const policyResult = scanFiles(extractedFiles);
+    if (!policyResult.allowed) {
+      log(`BLOCKED: ${policyResult.reason}`);
+      cleanup(deploymentId);
+      fs.rmSync(extractDir, { recursive: true, force: true });
+      return res.status(400).json({ error: `Content policy violation: ${policyResult.reason}` });
+    }
+    log('Content policy: OK');
 
     // 2. Determine if this is a buildable project
     let servableRoot = siteRoot;
@@ -228,6 +240,10 @@ async function serveDeploy(req, res) {
     return res.status(404).json({ error: 'Deployment not found' });
   }
 
+  if (isDeploymentSuspended(deployment.id)) {
+    return res.status(451).send('<h1>451 Unavailable For Legal Reasons</h1><p>This deployment has been suspended due to a content policy violation.</p>');
+  }
+
   let filePath = req.params[0] || 'index.html';
   if (filePath.endsWith('/')) filePath += 'index.html';
 
@@ -354,6 +370,74 @@ const MIME_TYPES = {
   '.zip': 'application/zip',
 };
 
+/** Abuse report banner injected into HTML pages */
+const ABUSE_BANNER = (deploymentId) => `
+<style>
+#shelkit-report-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#999;font-family:system-ui,sans-serif;font-size:12px;padding:6px 16px;display:flex;align-items:center;justify-content:space-between;z-index:2147483647;backdrop-filter:blur(4px);}
+#shelkit-report-bar a{color:#8BC53F;text-decoration:none;cursor:pointer;}
+#shelkit-report-bar button{background:none;border:1px solid #444;color:#999;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;}
+#shelkit-report-bar button:hover{border-color:#888;color:#ccc;}
+#shelkit-report-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2147483648;align-items:center;justify-content:center;}
+#shelkit-report-modal.open{display:flex;}
+#shelkit-report-inner{background:#111;border:1px solid #333;border-radius:8px;padding:24px;width:320px;font-family:system-ui,sans-serif;}
+#shelkit-report-inner h3{color:#e8e8e8;margin:0 0 12px;font-size:15px;}
+#shelkit-report-inner select{width:100%;background:#1a1a1a;color:#e8e8e8;border:1px solid #333;border-radius:4px;padding:8px;margin-bottom:12px;font-size:13px;}
+#shelkit-report-inner .btns{display:flex;gap:8px;}
+#shelkit-report-inner .btns button{flex:1;padding:8px;border-radius:4px;cursor:pointer;font-size:13px;}
+#shelkit-report-inner .submit{background:#8BC53F;color:#000;border:none;}
+#shelkit-report-inner .cancel{background:none;border:1px solid #444;color:#999;}
+#shelkit-report-msg{color:#8BC53F;font-size:13px;margin-top:8px;display:none;}
+</style>
+<div id="shelkit-report-bar">
+  <span>Hosted on <a href="https://shelkit.forestinfra.com" target="_blank">ShelKit</a></span>
+  <button onclick="document.getElementById('shelkit-report-modal').classList.add('open')">Report</button>
+</div>
+<div id="shelkit-report-modal">
+  <div id="shelkit-report-inner">
+    <h3>Report this site</h3>
+    <select id="shelkit-report-reason">
+      <option value="">Select a reason...</option>
+      <option value="illegal-content">Illegal content</option>
+      <option value="malware">Malware / phishing</option>
+      <option value="phishing">Phishing</option>
+      <option value="spam">Spam</option>
+      <option value="copyright">Copyright violation</option>
+      <option value="violence">Violence / harmful content</option>
+      <option value="other">Other</option>
+    </select>
+    <div class="btns">
+      <button class="cancel" onclick="document.getElementById('shelkit-report-modal').classList.remove('open')">Cancel</button>
+      <button class="submit" onclick="shelkitSubmitReport()">Submit</button>
+    </div>
+    <div id="shelkit-report-msg"></div>
+  </div>
+</div>
+<script>
+async function shelkitSubmitReport(){
+  const reason=document.getElementById('shelkit-report-reason').value;
+  if(!reason){alert('Please select a reason');return;}
+  try{
+    const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deploymentId:'${deploymentId}',reason,url:location.href})});
+    const d=await r.json();
+    const msg=document.getElementById('shelkit-report-msg');
+    msg.style.display='block';
+    msg.textContent=d.message||'Report submitted. Thank you.';
+    setTimeout(()=>document.getElementById('shelkit-report-modal').classList.remove('open'),2000);
+  }catch(e){alert('Failed to submit report. Please try again.');}
+}
+</script>`;
+
+/**
+ * Inject abuse reporting banner into HTML response
+ */
+function injectBanner(html, deploymentId) {
+  const banner = ABUSE_BANNER(deploymentId);
+  if (html.includes('</body>')) {
+    return html.replace('</body>', `${banner}</body>`);
+  }
+  return html + banner;
+}
+
 /**
  * Serve a file — Shelby-first, with local disk cache.
  * Files are served from the decentralised network by default.
@@ -366,6 +450,8 @@ async function serveFile(deployment, filePath, res) {
   const files = deployment.files || {};
   const blobName = files[filePath] || files['/' + filePath];
 
+  const isHtml = ext === '.html' || ext === '.htm';
+
   // 1. Check local cache first (avoids re-downloading from Shelby)
   if (deployment.extractDir) {
     const cachePath = path.join(deployment.extractDir, filePath);
@@ -373,6 +459,11 @@ async function serveFile(deployment, filePath, res) {
       res.setHeader('Content-Type', contentType);
       res.setHeader('X-Served-From', blobName ? 'shelby-cached' : 'local');
       if (blobName) res.setHeader('X-Blob-Name', blobName);
+
+      if (isHtml) {
+        const html = fs.readFileSync(cachePath, 'utf8');
+        return res.send(injectBanner(html, deployment.id));
+      }
       return res.sendFile(cachePath);
     }
   }
@@ -393,6 +484,11 @@ async function serveFile(deployment, filePath, res) {
         res.setHeader('Content-Type', contentType);
         res.setHeader('X-Served-From', 'shelby');
         res.setHeader('X-Blob-Name', blobName);
+
+        if (isHtml) {
+          const html = Buffer.isBuffer(data) ? data.toString('utf8') : data;
+          return res.send(injectBanner(html, deployment.id));
+        }
         return res.send(data);
       }
     } catch (err) {
@@ -406,6 +502,11 @@ async function serveFile(deployment, filePath, res) {
     if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
       res.setHeader('Content-Type', contentType);
       res.setHeader('X-Served-From', 'local-fallback');
+
+      if (isHtml) {
+        const html = fs.readFileSync(fullPath, 'utf8');
+        return res.send(injectBanner(html, deployment.id));
+      }
       return res.sendFile(fullPath);
     }
   }

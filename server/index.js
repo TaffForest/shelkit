@@ -15,6 +15,9 @@ const authRoutes = require('./routes/auth');
 const store = require('./services/store');
 const healthRoutes = require('./routes/health');
 const requireAuth = require('./middleware/requireAuth');
+const adminRoutes = require('./routes/admin');
+const abuseRoutes = require('./routes/abuse');
+const { isWalletSuspended, isDeploymentSuspended } = require('./services/contentPolicy');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +81,20 @@ const authLimiter = rateLimit({
 // Auth routes (public, rate limited)
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/health', healthRoutes);
+
+// Public abuse reporting
+app.use('/api/report', abuseRoutes);
+
+// Admin routes (protected by ADMIN_SECRET header)
+app.use('/api/admin', adminRoutes);
+
+// Wallet suspension check middleware
+app.use('/api/deploy', (req, res, next) => {
+  if (req.wallet && isWalletSuspended(req.wallet)) {
+    return res.status(403).json({ error: 'Your account has been suspended. Contact support.' });
+  }
+  next();
+});
 
 // Protected deploy routes
 app.post('/api/deploy', requireAuth, deployLimiter, upload.single('file'), handleDeploy);

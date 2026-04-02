@@ -16,6 +16,8 @@ export default function Landing() {
             <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }) }}>Pricing</a>
             <Link to="/docs">Docs</Link>
             <Link to="/gallery">Gallery</Link>
+            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
+            <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
         </div>
@@ -219,8 +221,14 @@ export default function Landing() {
             <Link to="/docs">Docs</Link>
             <Link to="/app">Launch App</Link>
           </div>
+          <div className="footer-links">
+            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
+            <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
+            <a href="https://foreststaking.com" target="_blank" rel="noopener noreferrer">Forest Staking</a>
+            <a href="https://shelby.xyz" target="_blank" rel="noopener noreferrer">Shelby</a>
+          </div>
           <div className="footer-copy">
-            &copy; {new Date().getFullYear()} ShelKit. Powered by ShelPin.
+            &copy; {new Date().getFullYear()} ShelKit &mdash; a <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a> product. Powered by <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>.
           </div>
         </div>
       </footer>

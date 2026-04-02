@@ -592,3 +592,93 @@
 }
 .dash-gallery-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 .dash-gallery-confirm:not(:disabled):hover { opacity: 0.85; }
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .dash-container {
+    padding: 24px 16px;
+  }
+
+  .dash-header {
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .dash-new-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dash-card {
+    padding: 14px 16px;
+  }
+
+  .dash-card-top {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dash-card-url a {
+    font-size: 11px;
+    word-break: break-all;
+  }
+
+  .dash-card-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dash-card-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dash-action-btn {
+    flex: 1;
+    min-width: calc(50% - 6px);
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .dash-confirm-delete {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dash-domain-add {
+    flex-direction: column;
+  }
+
+  .dash-domain-add-btn {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .dash-preview-frame {
+    height: 220px;
+  }
+
+  .dash-gallery-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dash-gallery-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+  }
+
+  .dash-gallery-modal-actions {
+    flex-direction: column;
+  }
+
+  .dash-gallery-cancel,
+  .dash-gallery-confirm {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
+}

@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import './Landing.css'
 
 export default function Landing() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const closeMenu = () => setMenuOpen(false)
+  const scrollTo = (id) => { closeMenu(); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }) }
+
   return (
     <div className="landing">
       {/* Nav */}
@@ -11,16 +16,33 @@ export default function Landing() {
             <span>Shel<span className="accent">Kit</span></span>
           </a>
           <div className="nav-links">
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }}>Features</a>
-            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>How it works</a>
-            <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }) }}>Pricing</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features') }}>Features</a>
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works') }}>How it works</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
             <Link to="/docs">Docs</Link>
             <Link to="/gallery">Gallery</Link>
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
+          <button className="nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+            <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
+            <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
+            <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
+          </button>
         </div>
+        {menuOpen && (
+          <div className="nav-mobile-menu">
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features') }}>Features</a>
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works') }}>How it works</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
+            <Link to="/docs" onClick={closeMenu}>Docs</Link>
+            <Link to="/gallery" onClick={closeMenu}>Gallery</Link>
+            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>ShelPin</a>
+            <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Forest Infra</a>
+            <Link to="/app" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}

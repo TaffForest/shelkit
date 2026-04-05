@@ -26,8 +26,14 @@ async function getShelbyClient() {
   const { ShelbyNodeClient } = await import('@shelby-protocol/sdk/node');
   const { Network, Ed25519PrivateKey, Account } = await import('@aptos-labs/ts-sdk');
 
+  const networkMap = {
+    testnet: Network.TESTNET,
+    shelbynet: Network.SHELBYNET,
+  };
+  const network = networkMap[SHELBY_NETWORK.toLowerCase()] || Network.SHELBYNET;
+
   _shelbyClient = new ShelbyNodeClient({
-    network: Network.SHELBYNET,
+    network,
     apiKey: SHELBY_API_KEY,
     fullnodeUrl: SHELBY_FULLNODE_URL,
     indexerUrl: SHELBY_INDEXER_URL,

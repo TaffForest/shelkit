@@ -3,8 +3,10 @@ const TTL_MS = 10 * 60 * 1000; // 10 minutes
 const sessions = new Map();
 
 function set(sessionId, files, wallet) {
+  const existing = sessions.get(sessionId);
   sessions.set(sessionId, {
     files,
+    previousFiles: existing ? existing.files : null,
     wallet,
     expiresAt: Date.now() + TTL_MS,
   });

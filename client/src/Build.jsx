@@ -1,36 +1,29 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWallet } from './hooks/useWallet.jsx'
+import { useBuildState } from './build/useBuildState.js'
+import ChatPanel from './build/ChatPanel.jsx'
+import PreviewPane from './build/PreviewPane.jsx'
 import './Build.css'
 
 export default function Build() {
-  const { connected, address, loading: walletLoading, error: walletError, hasPetra, connect, disconnect, authHeaders } = useWallet()
-  const [prompt, setPrompt] = useState('')
-  const [generating, setGenerating] = useState(false)
-  const [previewUrl, setPreviewUrl] = useState(null)
-  const [assistantMessage, setAssistantMessage] = useState(null)
-  const [error, setError] = useState(null)
+  const {
+    connected,
+    address,
+    loading: walletLoading,
+    error: walletError,
+    hasPetra,
+    connect,
+    disconnect,
+    authHeaders,
+  } = useWallet()
 
-  const generate = async () => {
-    if (!prompt.trim() || generating) return
-    setGenerating(true)
-    setError(null)
-    setAssistantMessage(null)
-    try {
-      const res = await fetch('/api/build/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ prompt: prompt.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Generation failed')
-      setPreviewUrl(data.previewUrl)
-      setAssistantMessage(data.assistantMessage)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setGenerating(false)
-    }
+  const { state, generate, edit, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
+  const [inputValue, setInputValue] = useState('')
+
+  const handleSend = (text) => {
+    if (isFirstTurn) generate(text)
+    else edit(text)
   }
 
   return (
@@ -73,44 +66,23 @@ export default function Build() {
         </div>
       ) : (
         <div className="build-container">
-          <div className="build-left">
-            <h1>Describe your site</h1>
-            <p className="muted">One or two sentences. The more specific, the better the first draft.</p>
-            <textarea
-              className="build-prompt"
-              placeholder="A portfolio site for a freelance illustrator with a gallery section and a contact form."
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              disabled={generating}
-              rows={6}
-              maxLength={4000}
-            />
-            <button
-              className="build-btn"
-              onClick={generate}
-              disabled={generating || !prompt.trim()}
-            >
-              {generating ? 'Generating...' : 'Generate'}
-            </button>
-            {error && <p className="build-error">{error}</p>}
-            {assistantMessage && <p className="build-assistant">{assistantMessage}</p>}
-          </div>
-
-          <div className="build-right">
-            {previewUrl ? (
-              <iframe
-                key={previewUrl}
-                src={previewUrl}
-                className="build-preview"
-                sandbox="allow-scripts"
-                title="Generated site preview"
-              />
-            ) : (
-              <div className="build-preview-empty">
-                <p className="muted">Your live preview will appear here.</p>
-              </div>
-            )}
-          </div>
+          <ChatPanel
+            turns={state.turns}
+            status={state.status}
+            error={state.error}
+            isFirstTurn={isFirstTurn}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            onSend={handleSend}
+            onReset={reset}
+          />
+          <PreviewPane
+            previewUrl={state.previewUrl}
+            previewVersion={state.previewVersion}
+            status={state.status}
+            isFirstTurn={isFirstTurn}
+            onUsePrompt={(p) => setInputValue(p)}
+          />
         </div>
       )}
     </div>

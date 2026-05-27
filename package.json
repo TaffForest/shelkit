@@ -5,7 +5,9 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node server/index.js"
+    "dev": "env -u ANTHROPIC_API_KEY node server/index.js",
+    "smoke:model": "node scripts/test-model.js",
+    "smoke:build": "node scripts/test-build.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.99.0",

@@ -18,6 +18,7 @@ const requireAuth = require('./middleware/requireAuth');
 const adminRoutes = require('./routes/admin');
 const abuseRoutes = require('./routes/abuse');
 const galleryRoutes = require('./routes/gallery');
+const buildRoutes = require('./routes/build');
 const { isWalletSuspended, isDeploymentSuspended } = require('./services/contentPolicy');
 
 const app = express();
@@ -88,6 +89,9 @@ app.use('/api/report', abuseRoutes);
 
 // Public gallery
 app.use('/api/gallery', galleryRoutes);
+
+// ShelKit Build — AI website generator (sub-router applies requireAuth per route)
+app.use('/api/build', buildRoutes);
 
 // Admin routes (protected by ADMIN_SECRET header)
 app.use('/api/admin', adminRoutes);

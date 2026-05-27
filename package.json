@@ -8,6 +8,7 @@
     "dev": "node server/index.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.99.0",
     "@aptos-labs/ts-sdk": "^6.3.1",
     "@shelby-protocol/sdk": "^0.2.4",
     "better-sqlite3": "^12.8.0",

@@ -1,11 +1,70 @@
 const express = require('express');
 const path = require('path');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const requireAuth = require('../middleware/requireAuth');
 const aiClient = require('../services/aiClient');
 const previewStore = require('../services/buildPreviewStore');
 
 const router = express.Router();
+
+/** Per-wallet rate limit for the model-burning endpoints. 15 calls / 10 min
+ * comfortably covers a normal session (1 generate + ~10 edits) without
+ * throttling legitimate iteration; caps abuse at ~90/hr/wallet. */
+const buildRateLimit = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Key by wallet (set by requireAuth above this middleware); fall back
+  // to IP for defence-in-depth if anyone reorders middleware.
+  // ipKeyGenerator is required for IPv6 safety in express-rate-limit v8.
+  // Passing req.ip directly throws ERR_ERL_KEY_GEN_IPV6 at registration —
+  // server starts but middleware is silently not attached. Diagnostic
+  // signal: no RateLimit-* headers on responses.
+  keyGenerator: (req) => req.wallet || ipKeyGenerator(req),
+  message: {
+    error: 'Too many requests in a short period. Wait a few minutes and try again.',
+    code: 'rate_limited_client',
+  },
+});
+
+/** Translate a thrown error from the AI client into an HTTP response.
+ * Provider-specific shapes are normalised to AiClientError upstream; here
+ * we just pick the right status + a sanitised, user-facing message. */
+function errorResponse(res, err) {
+  if (!(err instanceof aiClient.AiClientError)) {
+    console.error('Build route unknown error:', err);
+    return res.status(500).json({
+      error: 'Something went wrong. Try again, or check the server logs.',
+      code: 'unknown',
+    });
+  }
+  console.error(`Build route AiClientError code=${err.code}:`, err.message, err.cause?.message || '');
+  switch (err.code) {
+    case 'auth':
+      return res.status(500).json({
+        error: 'Service misconfigured — contact support.',
+        code: 'auth',
+      });
+    case 'rate_limited':
+      return res.status(429).json({
+        error: 'Anthropic rate limit hit. Wait a moment and try again.',
+        code: 'rate_limited',
+      });
+    case 'empty_files':
+    case 'no_tool_call':
+      return res.status(502).json({
+        error: 'The model returned an unexpected response. Try again — usually transient.',
+        code: err.code,
+      });
+    default:
+      return res.status(500).json({
+        error: 'Something went wrong. Try again, or check the server logs.',
+        code: 'unknown',
+      });
+  }
+}
 
 const MIME_TYPES = {
   '.html': 'text/html', '.htm': 'text/html',
@@ -42,7 +101,7 @@ function filesToMap(files) {
 }
 
 /** POST /api/build/generate — generate a new site from a prompt */
-router.post('/generate', requireAuth, async (req, res) => {
+router.post('/generate', requireAuth, buildRateLimit, async (req, res) => {
   const { prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Prompt is required.' });
@@ -68,13 +127,12 @@ router.post('/generate', requireAuth, async (req, res) => {
       assistantMessage,
     });
   } catch (err) {
-    console.error('Build generate error:', err);
-    res.status(500).json({ error: err.message || 'Generation failed.' });
+    errorResponse(res, err);
   }
 });
 
 /** POST /api/build/edit — modify the site in an existing session */
-router.post('/edit', requireAuth, async (req, res) => {
+router.post('/edit', requireAuth, buildRateLimit, async (req, res) => {
   const { sessionId, instruction, conversation } = req.body || {};
   if (!sessionId || typeof sessionId !== 'string') {
     return res.status(400).json({ error: 'sessionId is required.' });
@@ -116,8 +174,7 @@ router.post('/edit', requireAuth, async (req, res) => {
       assistantMessage,
     });
   } catch (err) {
-    console.error('Build edit error:', err);
-    res.status(500).json({ error: err.message || 'Edit failed.' });
+    errorResponse(res, err);
   }
 });
 

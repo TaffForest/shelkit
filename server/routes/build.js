@@ -29,6 +29,18 @@ const PREVIEW_CSP =
   "connect-src 'none'; " +
   "frame-ancestors 'self'";
 
+/** Normalise the model's files array into a path-keyed map, rejecting path traversal. */
+function filesToMap(files) {
+  const fileMap = {};
+  for (const f of files) {
+    if (!f.path || typeof f.content !== 'string') continue;
+    const normalised = f.path.replace(/^\/+/, '');
+    if (normalised.includes('..') || path.isAbsolute(normalised)) continue;
+    fileMap[normalised] = f.content;
+  }
+  return fileMap;
+}
+
 /** POST /api/build/generate — generate a new site from a prompt */
 router.post('/generate', requireAuth, async (req, res) => {
   const { prompt } = req.body || {};
@@ -41,15 +53,7 @@ router.post('/generate', requireAuth, async (req, res) => {
 
   try {
     const { files, assistantMessage } = await aiClient.generateSite({ prompt: prompt.trim() });
-
-    const fileMap = {};
-    for (const f of files) {
-      if (!f.path || typeof f.content !== 'string') continue;
-      const normalised = f.path.replace(/^\/+/, '');
-      if (normalised.includes('..') || path.isAbsolute(normalised)) continue;
-      fileMap[normalised] = f.content;
-    }
-
+    const fileMap = filesToMap(files);
     if (!fileMap['index.html']) {
       return res.status(502).json({ error: 'Generated site is missing index.html.' });
     }
@@ -66,6 +70,54 @@ router.post('/generate', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Build generate error:', err);
     res.status(500).json({ error: err.message || 'Generation failed.' });
+  }
+});
+
+/** POST /api/build/edit — modify the site in an existing session */
+router.post('/edit', requireAuth, async (req, res) => {
+  const { sessionId, instruction, conversation } = req.body || {};
+  if (!sessionId || typeof sessionId !== 'string') {
+    return res.status(400).json({ error: 'sessionId is required.' });
+  }
+  if (!instruction || typeof instruction !== 'string' || !instruction.trim()) {
+    return res.status(400).json({ error: 'Instruction is required.' });
+  }
+  if (instruction.length > 4000) {
+    return res.status(400).json({ error: 'Instruction is too long (max 4000 chars).' });
+  }
+
+  const session = previewStore.get(sessionId);
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found or expired. Start a new generation.' });
+  }
+  if (session.wallet && session.wallet !== req.wallet) {
+    return res.status(403).json({ error: 'Not authorised for this session.' });
+  }
+
+  const currentFiles = Object.entries(session.files).map(([p, content]) => ({ path: p, content }));
+
+  try {
+    const { files, assistantMessage } = await aiClient.editSite({
+      instruction: instruction.trim(),
+      currentFiles,
+      conversation: Array.isArray(conversation) ? conversation : [],
+    });
+    const fileMap = filesToMap(files);
+    if (!fileMap['index.html']) {
+      return res.status(502).json({ error: 'Edited site is missing index.html.' });
+    }
+
+    previewStore.set(sessionId, fileMap, req.wallet);
+
+    res.json({
+      sessionId,
+      previewUrl: `/api/build/preview/${sessionId}/index.html`,
+      files: Object.keys(fileMap),
+      assistantMessage,
+    });
+  } catch (err) {
+    console.error('Build edit error:', err);
+    res.status(500).json({ error: err.message || 'Edit failed.' });
   }
 });
 

@@ -2,7 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { AiClientError } = require('../aiClientError');
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
-const MAX_TOKENS = 8192;
+const MAX_TOKENS = 16384;
 
 const SYSTEM_PROMPT = `You are a senior web designer generating a complete, production-quality static website from a user description.
 
@@ -106,13 +106,79 @@ function parseResponse(response) {
   return { files, assistantMessage: assistant_message || '' };
 }
 
-async function generateSite({ prompt }) {
-  const response = await callModel([{ role: 'user', content: prompt }]);
-  return parseResponse(response);
+const EDIT_MODE_ADDENDUM = `
+
+Edit mode rules:
+- Preserve the existing structure, palette, typography, and voice unless the instruction explicitly asks you to change them.
+- Make the minimum change that satisfies the instruction. Do not redesign incidentally.
+- Output the COMPLETE updated site (full index.html) via emit_site — not a patch or diff.`;
+
+const RETRY_CODES = new Set(['empty_files', 'no_tool_call']);
+
+/**
+ * Run a model call once; on a transient-shape failure (empty_files /
+ * no_tool_call), retry once. Logs both the retry attempt and its outcome
+ * so success-after-retry is distinguishable from hard failure.
+ *
+ * @param {() => Promise<object>} fn  The model call returning a SiteResult.
+ * @param {string} kind               'generateSite' | 'editSite' (for log lines).
+ * @param {string} promptForLog       User prompt or edit instruction, used for prompt_preview.
+ */
+async function withRetry(fn, kind, promptForLog) {
+  let firstError = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const result = await fn();
+      if (firstError) {
+        console.warn(`[ai-retry] succeeded on attempt 2 — first error: ${firstError.code} on ${kind}`);
+      }
+      return result;
+    } catch (err) {
+      if (!(err instanceof AiClientError) || !RETRY_CODES.has(err.code)) {
+        throw err;
+      }
+      if (attempt === 1) {
+        firstError = err;
+        console.warn(`[ai-retry] ${err.code} on ${kind} — attempt 1/2 — model=${getModel()} max_tokens=${MAX_TOKENS} prompt_len=${promptForLog.length}`);
+        continue;
+      }
+      const preview = promptForLog.slice(0, 80).replace(/\s+/g, ' ');
+      console.warn(`[ai-retry] ${err.code} on ${kind} — attempt 2/2 — failed — prompt_preview="${preview}${promptForLog.length > 80 ? '...' : ''}"`);
+      throw err;
+    }
+  }
 }
 
-async function editSite() {
-  throw new AiClientError('unknown', 'editSite not yet implemented (Step 2)');
+async function generateSite({ prompt }) {
+  return withRetry(
+    async () => parseResponse(await callModel([{ role: 'user', content: prompt }])),
+    'generateSite',
+    prompt,
+  );
+}
+
+function buildEditMessages({ instruction, currentFiles, conversation }) {
+  const messages = [];
+  for (const turn of (conversation || [])) {
+    if (turn && (turn.role === 'user' || turn.role === 'assistant') && typeof turn.text === 'string') {
+      messages.push({ role: turn.role, content: turn.text });
+    }
+  }
+  const filesBlock = currentFiles.map(f => `=== ${f.path} ===\n${f.content}`).join('\n\n');
+  const userTurn = `Current site (the user is asking you to modify this):\n\n${filesBlock}\n\nInstruction: ${instruction}${EDIT_MODE_ADDENDUM}`;
+  messages.push({ role: 'user', content: userTurn });
+  return messages;
+}
+
+async function editSite({ instruction, currentFiles, conversation }) {
+  if (!Array.isArray(currentFiles) || currentFiles.length === 0) {
+    throw new AiClientError('unknown', 'editSite requires currentFiles');
+  }
+  return withRetry(
+    async () => parseResponse(await callModel(buildEditMessages({ instruction, currentFiles, conversation }))),
+    'editSite',
+    instruction,
+  );
 }
 
 module.exports = { generateSite, editSite, getModel };

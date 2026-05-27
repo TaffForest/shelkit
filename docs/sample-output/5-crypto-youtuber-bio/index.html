@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CryptoWithKai — Links</title>
+  <meta name="description" content="All of Kai's crypto content, tools, and community — in one place.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:       #0D0F14;
+      --surface:  #141720;
+      --border:   #1E2330;
+      --accent:   #F5A623;
+      --accent2:  #3DFFC0;
+      --text:     #E8EAF0;
+      --muted:    #6B7280;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 60%, rgba(245,166,35,0.06));
+      pointer-events: none;
+    }
+
+    .link-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      background: #181c27;
+    }
+
+    .link-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .link-card.accent2:hover {
+      border-color: var(--accent2);
+    }
+
+    .link-card.accent2::after {
+      background: linear-gradient(135deg, transparent 60%, rgba(61,255,192,0.05));
+    }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(245,166,35,0.12);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .tag.green {
+      background: rgba(61,255,192,0.10);
+      color: var(--accent2);
+    }
+
+    .avatar-ring {
+      background: conic-gradient(var(--accent), var(--accent2), var(--accent));
+      border-radius: 50%;
+      padding: 3px;
+      display: inline-block;
+    }
+
+    .avatar-inner {
+      background: var(--bg);
+      border-radius: 50%;
+      padding: 3px;
+      display: block;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .link-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="relative z-10 flex flex-col items-center px-4 py-12 pb-20 max-w-lg mx-auto">
+
+    <!-- Avatar -->
+    <div class="avatar-ring mb-4">
+      <span class="avatar-inner">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Kai avatar">
+          <circle cx="40" cy="40" r="40" fill="#141720"/>
+          <!-- Face base -->
+          <circle cx="40" cy="34" r="16" fill="#1E2330"/>
+          <!-- Eyes -->
+          <circle cx="34" cy="32" r="2.5" fill="#F5A623"/>
+          <circle cx="46" cy="32" r="2.5" fill="#F5A623"/>
+          <!-- Smile -->
+          <path d="M33 39 Q40 45 47 39" stroke="#3DFFC0" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- Hair / cap hint -->
+          <path d="M24 30 Q26 16 40 14 Q54 16 56 30 Q50 24 40 24 Q30 24 24 30Z" fill="#F5A623"/>
+          <!-- Body -->
+          <ellipse cx="40" cy="68" rx="20" ry="14" fill="#1E2330"/>
+          <!-- BTC symbol on shirt -->
+          <text x="36" y="72" font-family="monospace" font-size="10" fill="#3DFFC0" font-weight="700">₿</text>
+        </svg>
+      </span>
+    </div>
+
+    <!-- Name & handle -->
+    <h1 class="text-2xl font-bold tracking-tight mb-1">CryptoWithKai</h1>
+    <p class="mono text-sm mb-1" style="color:var(--accent)">@cryptowithkai</p>
+    <p class="text-sm text-center mb-6" style="color:var(--muted); max-width:28ch;">
+      On-chain analysis · market structure · DeFi deep-dives
+    </p>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-3 gap-3 w-full mb-8">
+      <div class="stat-box">
+        <p class="text-lg font-bold" style="color:var(--accent)">128K</p>
+        <p class="mono text-xs" style="color:var(--muted)">subscribers</p>
+      </div>
+      <div class="stat-box">
+        <p class="text-lg font-bold" style="color:var(--accent2)">3.4M</p>
+        <p class="mono text-xs" style="color:var(--muted)">total views</p>
+      </div>
+      <div class="stat-box">
+        <p class="text-lg font-bold" style="color:var(--text)">2× / wk</p>
+        <p class="mono text-xs" style="color:var(--muted)">uploads</p>
+      </div>
+    </div>
+
+    <!-- Section: Content -->
+    <div class="divider w-full mb-4">Content</div>
+
+    <div class="flex flex-col gap-3 w-full mb-8">
+
+      <a href="#" class="link-card" aria-label="YouTube channel">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#FF0000" opacity="0.15"/>
+            <path d="M22.5 10.5s-.2-1.4-.8-2c-.8-.8-1.6-.8-2-.9C17.2 7.4 14 7.4 14 7.4s-3.2 0-5.7.2c-.4 0-1.2.1-2 .9-.6.6-.8 2-.8 2S5.3 12 5.3 13.5v1.4c0 1.5.2 2.9.2 2.9s.2 1.4.8 2c.8.8 1.8.8 2.2.8C9.8 20.7 14 20.8 14 20.8s3.2 0 5.7-.3c.4 0 1.2-.1 2-.9.6-.6.8-2 .8-2s.2-1.4.2-2.9v-1.4c0-1.5-.2-2.9-.2-2.9z" fill="#FF0000"/>
+            <path d="M12 17.2V11l5.5 3.1L12 17.2z" fill="white"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">YouTube Channel</p>
+          <p class="text-xs" style="color:var(--muted)">Weekly market breakdowns &amp; on-chain reads</p>
+        </div>
+        <span class="tag">New video</span>
+      </a>
+
+      <a href="#" class="link-card" aria-label="Latest video">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#F5A623" opacity="0.12"/>
+            <polygon points="11,8 21,14 11,20" fill="#F5A623"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">Watch: "Is This the Last Dip?"</p>
+          <p class="text-xs" style="color:var(--muted)">Bitcoin structure analysis — posted 2 days ago</p>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+
+    </div>
+
+    <!-- Section: Community -->
+    <div class="divider w-full mb-4">Community</div>
+
+    <div class="flex flex-col gap-3 w-full mb-8">
+
+      <a href="#" class="link-card accent2" aria-label="Discord server">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#5865F2" opacity="0.15"/>
+            <path d="M20.3 8.7a16.2 16.2 0 00-4-.8l-.2.3c1.4.4 2.1.9 2.8 1.4a10 10 0 00-5-.8 10 10 0 00-5 .8c.7-.5 1.6-1.1 2.9-1.4l-.2-.3a16.2 16.2 0 00-4 .8C5.7 12 5 16 5.2 20c1.4 1 2.8 1.7 4.1 2.2l.8-1.2a9.5 9.5 0 01-2.2-1.2l.5-.4a10.8 10.8 0 009.2 0l.5.4a9.5 9.5 0 01-2.2 1.2l.8 1.2c1.3-.5 2.7-1.2 4.1-2.2.3-4.3-.6-8.2-2.5-11.3zM11 17.5c-.9 0-1.6-.8-1.6-1.8 0-1 .7-1.8 1.6-1.8s1.6.8 1.6 1.8c0 1-.7 1.8-1.6 1.8zm5.8 0c-.9 0-1.6-.8-1.6-1.8 0-1 .7-1.8 1.6-1.8.9 0 1.6.8 1.6 1.8 0 1-.7 1.8-1.6 1.8z" fill="#5865F2"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">Join the Discord</p>
+          <p class="text-xs" style="color:var(--muted)">Live trade alerts, charting sessions &amp; alpha chat</p>
+        </div>
+        <span class="tag green">Free</span>
+      </a>
+
+      <a href="#" class="link-card accent2" aria-label="Telegram channel">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#29B6F6" opacity="0.12"/>
+            <path d="M22.5 6.5L5.5 13.3c-.8.3-.8.9 0 1.1l4.3 1.3 1.7 5.2c.2.7.9.9 1.4.4l2.4-2.4 4.7 3.4c.6.5 1.4.2 1.6-.5l2.9-13.8c.3-1.3-.5-2-1.5-1.5z" fill="#29B6F6"/>
+            <path d="M10.5 15l10-7-7.5 8.5" fill="#E1F5FE" opacity="0.5"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">Telegram Alerts</p>
+          <p class="text-xs" style="color:var(--muted)">Instant market news, no noise</p>
+        </div>
+        <span class="tag green">Free</span>
+      </a>
+
+    </div>
+
+    <!-- Section: Tools & Resources -->
+    <div class="divider w-full mb-4">Tools &amp; Resources</div>
+
+    <div class="flex flex-col gap-3 w-full mb-8">
+
+      <a href="#" class="link-card" aria-label="Trading course">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#F5A623" opacity="0.12"/>
+            <rect x="7" y="8" width="14" height="12" rx="2" stroke="#F5A623" stroke-width="1.5" fill="none"/>
+            <path d="M10 12h8M10 15h5" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M16 20l2 2" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">Crypto Fundamentals Course</p>
+          <p class="text-xs" style="color:var(--muted)">Self-paced — wallets, DeFi, on-chain analysis</p>
+        </div>
+        <span class="tag">Paid</span>
+      </a>
+
+      <a href="#" class="link-card" aria-label="Newsletter signup">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#3DFFC0" opacity="0.10"/>
+            <rect x="6" y="9" width="16" height="11" rx="2" stroke="#3DFFC0" stroke-width="1.5" fill="none"/>
+            <path d="M6 12l8 5 8-5" stroke="#3DFFC0" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">The Weekly On-Chain</p>
+          <p class="text-xs" style="color:var(--muted)">Newsletter — market structure, every Sunday</p>
+        </div>
+        <span class="tag green">Free</span>
+      </a>
+
+      <a href="#" class="link-card" aria-label="Recommended exchanges">
+        <span aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="#F5A623" opacity="0.12"/>
+            <circle cx="14" cy="14" r="6" stroke="#F5A623" stroke-width="1.5" fill="none"/>
+            <path d="M14 10v4l2.5 2.5" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 7l-2-2M18 7l2-2" stroke="#F5A623" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </span>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">Exchanges I Actually Use</p>
+          <p class="text-xs" style="color:var(--muted)">Referral links — fee discounts included</p>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+
+    </div>
+
+    <!-- Section: Socials -->
+    <div class="divider w-full mb-5">Socials</div>
+
+    <div class="flex gap-3 justify-center mb-10">
+
+      <!-- Twitter/X -->
+      <a href="#" aria-label="Twitter / X" class="flex items-center justify-center w-11 h-11 rounded-xl border" style="background:var(--surface); border-color:var(--border); transition: border-color 0.18s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M17.75 3h3.25l-7.1 8.12L22 21h-6.55l-4.57-5.97L5.2 21H1.95l7.6-8.68L2 3h6.7l4.13 5.41L17.75 3zm-1.14 16.16h1.8L7.5 4.83H5.57l11.04 14.33z" fill="var(--text)"/>
+        </svg>
+      </a>
+
+      <!-- Instagram -->
+      <a href="#" aria-label="Instagram" class="flex items-center justify-center w-11 h-11 rounded-xl border" style="background:var(--surface); border-color:var(--border); transition: border-color 0.18s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--text)" stroke-width="1.8"/>
+          <circle cx="12" cy="12" r="4.5" stroke="var(--text)" stroke-width="1.8"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="var(--text)"/>
+        </svg>
+      </a>
+
+      <!-- TikTok -->
+      <a href="#" aria-label="TikTok" class="flex items-center justify-center w-11 h-11 rounded-xl border" style="background:var(--surface); border-color:var(--border); transition: border-color 0.18s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M19.6 7.4A4.8 4.8 0 0116 6V2h-3.5v13.5a2 2 0 11-2-2v-3.6A5.5 5.5 0 0010.5 10a5.5 5.5 0 105.5 5.5V10a8.1 8.1 0 004.8 1.5V8a4.8 4.8 0 01-1.2-.6z" fill="var(--text)"/>
+        </svg>
+      </a>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+      <p class="mono text-xs" style="color:var(--muted)">Not financial advice. Do your own research.</p>
+      <p class="mono text-xs mt-1" style="color:var(--border)">© 2025 CryptoWithKai</p>
+    </footer>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mara Voss — Illustrator</title>
+  <meta name="description" content="Mara Voss is a freelance illustrator working in ink, gouache, and digital media. Editorial, publishing, and brand commissions welcome.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parchment: '#F4F0E6',
+            ink:       '#1C1917',
+            sepia:     '#7C6A52',
+            rust:      '#B45A2A',
+            dustpink:  '#E8D5C4',
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            body:    ['DM Sans', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: #F4F0E6;
+      color: #1C1917;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Nav underline hover */
+    .nav-link {
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: -2px;
+      width: 0; height: 1px;
+      background: #B45A2A;
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover::after,
+    .nav-link:focus::after { width: 100%; }
+
+    /* Gallery hover overlay */
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+    }
+    .gallery-item img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .gallery-item:hover img {
+      transform: scale(1.04);
+    }
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(28,25,23,0.55);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: flex-end;
+      padding: 1.25rem;
+    }
+    .gallery-item:hover .gallery-overlay,
+    .gallery-item:focus-within .gallery-overlay {
+      opacity: 1;
+    }
+
+    /* Textarea resize */
+    textarea { resize: vertical; }
+
+    /* Focus ring override */
+    .focus-rust:focus {
+      outline: 2px solid #B45A2A;
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gallery-item img,
+      .gallery-overlay,
+      .nav-link::after {
+        transition: none;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* Decorative rule */
+    .ruled::before {
+      content: '';
+      display: block;
+      width: 3rem;
+      height: 2px;
+      background: #B45A2A;
+      margin-bottom: 1.25rem;
+    }
+    .ruled-center::before {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Pill tag */
+    .tag {
+      display: inline-block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #E8D5C4;
+      color: #7C6A52;
+      border-radius: 2px;
+      padding: 0.2rem 0.55rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════  NAV  ═══════════════════════ -->
+<header class="sticky top-0 z-50 bg-parchment border-b border-dustpink">
+  <nav class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between" aria-label="Primary navigation">
+    <a href="#hero" class="font-display text-xl font-bold tracking-tight text-ink focus-rust">Mara Voss</a>
+    <ul class="flex gap-7 text-sm font-body font-medium text-sepia" role="list">
+      <li><a href="#work"    class="nav-link focus-rust">Work</a></li>
+      <li><a href="#about"   class="nav-link focus-rust">About</a></li>
+      <li><a href="#contact" class="nav-link focus-rust">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+<!-- ═══════════════════════  HERO  ══════════════════════ -->
+<section id="hero" class="max-w-6xl mx-auto px-6 pt-24 pb-20 md:pt-32 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
+
+  <!-- Text -->
+  <div>
+    <p class="tag mb-5">Freelance Illustrator</p>
+    <h1 class="font-display text-5xl md:text-6xl font-bold leading-[1.08] text-ink mb-6">
+      Pictures that<br>
+      <em class="font-display font-semibold italic text-rust">earn their place</em><br>
+      on the page.
+    </h1>
+    <p class="font-body text-sepia text-lg leading-relaxed max-w-md mb-8">
+      Editorial, publishing, and brand illustration — made by hand, finished with intention. Based in Amsterdam, working worldwide.
+    </p>
+    <div class="flex flex-wrap gap-4">
+      <a href="#work" class="inline-block bg-ink text-parchment font-body font-medium text-sm px-6 py-3 hover:bg-rust transition-colors duration-200 focus-rust">View my work</a>
+      <a href="#contact" class="inline-block border border-ink text-ink font-body font-medium text-sm px-6 py-3 hover:border-rust hover:text-rust transition-colors duration-200 focus-rust">Commission a piece</a>
+    </div>
+  </div>
+
+  <!-- SVG illustration —  abstract figure/composition -->
+  <div class="flex justify-center">
+    <svg viewBox="0 0 420 480" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Decorative illustration of an illustrator at work" role="img" class="w-full max-w-sm">
+      <!-- Background blob -->
+      <ellipse cx="210" cy="260" rx="180" ry="190" fill="#E8D5C4" opacity="0.55"/>
+
+      <!-- Desk surface -->
+      <rect x="60" y="310" width="300" height="18" rx="4" fill="#7C6A52" opacity="0.3"/>
+
+      <!-- Paper on desk -->
+      <rect x="100" y="230" width="160" height="90" rx="3" fill="#FAFAF5" stroke="#D0BEA8" stroke-width="1.5"/>
+      <!-- Sketch lines on paper -->
+      <line x1="118" y1="252" x2="212" y2="252" stroke="#B45A2A" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="118" y1="264" x2="200" y2="264" stroke="#C8A880" stroke-width="1" stroke-linecap="round"/>
+      <line x1="118" y1="275" x2="220" y2="275" stroke="#C8A880" stroke-width="1" stroke-linecap="round"/>
+      <line x1="118" y1="286" x2="190" y2="286" stroke="#C8A880" stroke-width="1" stroke-linecap="round"/>
+      <!-- Small drawn shape on paper -->
+      <circle cx="232" cy="268" r="18" stroke="#B45A2A" stroke-width="1.5" fill="none"/>
+      <path d="M218 268 Q232 255 246 268" stroke="#B45A2A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+      <!-- Pen/brush -->
+      <rect x="272" y="220" width="6" height="80" rx="3" fill="#7C6A52" transform="rotate(-18 272 220)"/>
+      <polygon points="295,296 291,310 299,310" fill="#1C1917" transform="rotate(-18 295 296)"/>
+
+      <!-- Ink pot -->
+      <rect x="72" y="282" width="28" height="28" rx="4" fill="#1C1917"/>
+      <rect x="75" y="279" width="22" height="6" rx="2" fill="#7C6A52"/>
+      <!-- ink sheen -->
+      <ellipse cx="82" cy="291" rx="4" ry="6" fill="#B45A2A" opacity="0.35"/>
+
+      <!-- Plant / leaves (top left) -->
+      <ellipse cx="85" cy="175" rx="22" ry="36" fill="#7C6A52" opacity="0.25" transform="rotate(-20 85 175)"/>
+      <ellipse cx="72" cy="160" rx="16" ry="28" fill="#7C6A52" opacity="0.4" transform="rotate(10 72 160)"/>
+      <line x1="80" y1="210" x2="80" y2="310" stroke="#7C6A52" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+
+      <!-- Framed art on wall -->
+      <rect x="290" y="120" width="80" height="100" rx="2" fill="#FAFAF5" stroke="#D0BEA8" stroke-width="2"/>
+      <!-- art inside frame -->
+      <circle cx="330" cy="158" r="22" fill="#E8D5C4"/>
+      <path d="M315 172 Q330 145 345 172" fill="#B45A2A" opacity="0.6"/>
+      <line x1="308" y1="185" x2="352" y2="185" stroke="#C8A880" stroke-width="1"/>
+      <line x1="308" y1="192" x2="345" y2="192" stroke="#C8A880" stroke-width="1"/>
+
+      <!-- Hanging string for frame -->
+      <line x1="330" y1="120" x2="330" y2="105" stroke="#7C6A52" stroke-width="1.5" opacity="0.5"/>
+
+      <!-- Chair legs (abstract) -->
+      <line x1="155" y1="328" x2="145" y2="400" stroke="#7C6A52" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+      <line x1="225" y1="328" x2="235" y2="400" stroke="#7C6A52" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+
+      <!-- Person (seated, simplified) -->
+      <!-- torso -->
+      <ellipse cx="190" cy="200" rx="32" ry="40" fill="#E8D5C4"/>
+      <!-- head -->
+      <circle cx="190" cy="148" r="26" fill="#E8D5C4"/>
+      <!-- hair -->
+      <ellipse cx="190" cy="138" rx="26" ry="16" fill="#7C6A52" opacity="0.85"/>
+      <ellipse cx="176" cy="148" rx="8" ry="18" fill="#7C6A52" opacity="0.85"/>
+      <ellipse cx="204" cy="148" rx="8" ry="18" fill="#7C6A52" opacity="0.85"/>
+      <!-- face details -->
+      <circle cx="182" cy="152" r="2.5" fill="#1C1917" opacity="0.6"/>
+      <circle cx="198" cy="152" r="2.5" fill="#1C1917" opacity="0.6"/>
+      <path d="M184 160 Q190 165 196 160" stroke="#B45A2A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- arm reaching to desk -->
+      <path d="M218 205 Q255 225 260 255" stroke="#E8D5C4" stroke-width="14" stroke-linecap="round" fill="none"/>
+      <path d="M218 205 Q255 225 260 255" stroke="#D0BEA8" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════  GALLERY  ═══════════════════════ -->
+<section id="work" class="bg-parchment py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="ruled mb-2">
+      <h2 class="font-display text-4xl font-bold text-ink">Selected work</h2>
+    </div>
+    <p class="font-body text-sepia mb-12 max-w-xl">A mix of editorial spots, book covers, and personal projects from the last two years.</p>
+
+    <!-- Filter tabs -->
+    <div class="flex flex-wrap gap-2 mb-10" role="list" aria-label="Filter gallery by category">
+      <button data-filter="all"      class="filter-btn active-filter tag cursor-pointer">All</button>
+      <button data-filter="editorial" class="filter-btn tag cursor-pointer">Editorial</button>
+      <button data-filter="publishing" class="filter-btn tag cursor-pointer">Publishing</button>
+      <button data-filter="personal"  class="filter-btn tag cursor-pointer">Personal</button>
+    </div>
+
+    <!-- Gallery grid -->
+    <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="editorial" tabindex="0" aria-label="Illustration: The Midnight Market">
+        <img src="https://picsum.photos/seed/editorial-night-market/600/800" alt="Ink illustration of a night market scene">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">The Midnight Market</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Editorial · Ink &amp; watercolour</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="publishing" tabindex="0" aria-label="Illustration: Bloom & Bone cover">
+        <img src="https://picsum.photos/seed/book-cover-botanical/600/800" alt="Botanical book cover illustration with layered foliage">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Bloom &amp; Bone</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Publishing · Gouache</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="personal" tabindex="0" aria-label="Illustration: Self-portrait in red">
+        <img src="https://picsum.photos/seed/portrait-red-light/600/800" alt="Abstract self-portrait in warm red tones">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Red Hour</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Personal · Ink &amp; digital</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="editorial" tabindex="0" aria-label="Illustration: On solitude essay spread">
+        <img src="https://picsum.photos/seed/editorial-solitude-figure/600/800" alt="Editorial spread illustration of a solitary figure in fog">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">On Solitude</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Editorial · Ink</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-square cursor-pointer" data-cat="publishing" tabindex="0" aria-label="Illustration: Strange Birds anthology">
+        <img src="https://picsum.photos/seed/birds-anthology-cover/600/600" alt="Anthology cover featuring stylised birds in flight">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Strange Birds</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Publishing · Gouache</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-square cursor-pointer" data-cat="personal" tabindex="0" aria-label="Illustration: Still life with enamel cup">
+        <img src="https://picsum.photos/seed/still-life-cup-window/600/600" alt="Still life drawing of an enamel cup on a windowsill">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Morning Cup</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Personal · Pencil &amp; ink</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="editorial" tabindex="0" aria-label="Illustration: Archive fever feature">
+        <img src="https://picsum.photos/seed/editorial-archive-shelves/600/800" alt="Editorial illustration of towering archive shelves">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Archive Fever</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Editorial · Ink &amp; digital</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="publishing" tabindex="0" aria-label="Illustration: The Salt Road novel cover">
+        <img src="https://picsum.photos/seed/novel-salt-road-landscape/600/800" alt="Novel cover with an austere salt flat landscape">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">The Salt Road</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Publishing · Gouache &amp; ink</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item rounded-sm aspect-[3/4] cursor-pointer" data-cat="personal" tabindex="0" aria-label="Illustration: Botanical study series">
+        <img src="https://picsum.photos/seed/botanical-study-leaves/600/800" alt="Detailed botanical study of layered leaves in ink">
+        <div class="gallery-overlay">
+          <div>
+            <p class="font-display italic text-parchment text-lg leading-tight">Specimen No. 4</p>
+            <p class="font-body text-dustpink text-xs mt-0.5">Personal · Ink</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /gallery -->
+  </div>
+</section>
+
+<!-- ═══════════════════════  ABOUT  ══════════════════════ -->
+<section id="about" class="py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+
+    <!-- Image -->
+    <div class="relative">
+      <div class="absolute -top-4 -left-4 w-full h-full border border-dustpink rounded-sm pointer-events-none" aria-hidden="true"></div>
+      <img
+        src="https://picsum.photos/seed/illustrator-studio-portrait/700/840"
+        alt="Mara Voss in her Amsterdam studio, surrounded by ink bottles and pinned sketches"
+        class="relative z-10 w-full aspect-[5/6] object-cover rounded-sm"
+      >
+      <!-- Colour wash overlay -->
+      <div class="absolute inset-0 z-20 rounded-sm" style="background: rgba(180,90,42,0.12);" aria-hidden="true"></div>
+    </div>
+
+    <!-- Text -->
+    <div>
+      <div class="ruled">
+        <h2 class="font-display text-4xl font-bold text-ink">About me</h2>
+      </div>
+      <p class="font-body text-sepia leading-relaxed mb-5">
+        I'm Mara — an illustrator working primarily in ink and gouache, with occasional excursions into the digital. I came to illustration through a literature degree and a stack of secondhand art books, which probably explains why most of my work ends up looking like it belongs inside one.
+      </p>
+      <p class="font-body text-sepia leading-relaxed mb-5">
+        I've worked with magazines, independent publishers, and brands who want imagery that feels considered rather than quick — the kind of picture that rewards a second look. I'm particularly drawn to commissions where the subject has some texture to it: memory, place, natural history, the quiet strangeness of daily life.
+      </p>
+      <p class="font-body text-sepia leading-relaxed mb-8">
+        I'm based in Amsterdam and typically take on three to four commissions a month. If you have a project in mind, I'd love to hear about it.
+      </p>
+
+      <ul class="flex flex-wrap gap-2" aria-label="Skills and media">
+        <li class="tag">Ink</li>
+        <li class="tag">Gouache</li>
+        <li class="tag">Pencil</li>
+        <li class="tag">Digital</li>
+        <li class="tag">Editorial</li>
+        <li class="tag">Publishing</li>
+        <li class="tag">Brand &amp; packaging</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════  CONTACT  ═══════════════════════ -->
+<section id="contact" class="bg-ink py-20 md:py-28">
+  <div class="max-w-3xl mx-auto px-6">
+
+    <div class="ruled mb-2" style="--rule-color:#B45A2A">
+      <h2 class="font-display text-4xl font-bold text-parchment">Let's work together</h2>
+    </div>
+    <p class="font-body text-sepia mb-12 max-w-lg">
+      Tell me about your project — the brief, the timeline, and the feeling you're after. I'll come back to you within two working days.
+    </p>
+
+    <form
+      name="contact"
+      onsubmit="handleSubmit(event)"
+      novalidate
+      class="space-y-6"
+    >
+
+      <div class="grid sm:grid-cols-2 gap-6">
+        <div>
+          <label for="name" class="block font-body text-sm font-medium text-dustpink mb-2">Your name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            autocomplete="name"
+            required
+            class="w-full bg-transparent border border-sepia text-parchment font-body text-sm px-4 py-3 rounded-sm focus-rust placeholder-sepia"
+            placeholder="Firstname Lastname"
+          >
+        </div>
+        <div>
+          <label for="email" class="block font-body text-sm font-medium text-dustpink mb-2">Email address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="email"
+            required
+            class="w-full bg-transparent border border-sepia text-parchment font-body text-sm px-4 py-3 rounded-sm focus-rust placeholder-sepia"
+            placeholder="you@example.com"
+          >
+        </div>
+      </div>
+
+      <div>
+        <label for="type" class="block font-body text-sm font-medium text-dustpink mb-2">Type of project</label>
+        <select
+          id="type"
+          name="type"
+          class="w-full bg-ink border border-sepia text-parchment font-body text-sm px-4 py-3 rounded-sm focus-rust"
+        >
+          <option value="">— Select one —</option>
+          <option value="editorial">Editorial illustration</option>
+          <option value="publishing">Book / publishing</option>
+          <option value="brand">Brand &amp; packaging</option>
+          <option value="personal">Personal commission</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="message" class="block font-body text-sm font-medium text-dustpink mb-2">Tell me about your project</label>
+        <textarea
+          id="message"
+          name="message"
+          rows="6"
+          required
+          class="w-full bg-transparent border border-sepia text-parchment font-body text-sm px-4 py-3 rounded-sm focus-rust placeholder-sepia"
+          placeholder="Brief, timeline, mood references — anything helps."
+        ></textarea>
+      </div>
+
+      <div id="form-msg" role="status" aria-live="polite" class="hidden text-sm font-body"></div>
+
+      <button
+        type="submit"
+        class="inline-block bg-rust text-parchment font-body font-medium text-sm px-8 py-3 rounded-sm hover:bg-sepia transition-colors duration-200 focus-rust"
+      >
+        Send my brief
+      </button>
+
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════  FOOTER  ═══════════════════════ -->
+<footer class="bg-ink border-t border-sepia border-opacity-30">
+  <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p class="font-display italic text-sepia text-sm">&copy; 2025 Mara Voss Illustration</p>
+    <nav aria-label="Social links">
+      <ul class="flex gap-6 text-sm font-body text-sepia" role="list">
+        <li><a href="#" class="nav-link focus-rust hover:text-parchment transition-colors">Instagram</a></li>
+        <li><a href="#" class="nav-link focus-rust hover:text-parchment transition-colors">Are.na</a></li>
+        <li><a href="#" class="nav-link focus-rust hover:text-parchment transition-colors">Behance</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  /* ── Gallery filter ── */
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const galleryItems = document.querySelectorAll('#gallery [data-cat]');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+
+      filterBtns.forEach(b => {
+        b.style.background = '';
+        b.style.color = '';
+        b.style.fontWeight = '';
+      });
+      btn.style.background = '#B45A2A';
+      btn.style.color = '#F4F0E6';
+
+      galleryItems.forEach(item => {
+        if (filter === 'all' || item.dataset.cat === filter) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Set initial active state
+  filterBtns[0].style.background = '#B45A2A';
+  filterBtns[0].style.color = '#F4F0E6';
+
+  /* ── Contact form ── */
+  function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const msg  = document.getElementById('form-msg');
+
+    // Simple client-side validation
+    const name  = form.name.value.trim();
+    const email = form.email.value.trim();
+    const body  = form.message.value.trim();
+
+    if (!name || !email || !body) {
+      msg.className = 'text-sm font-body text-rust';
+      msg.textContent = 'Please fill in your name, email, and message before sending.';
+      msg.classList.remove('hidden');
+      return;
+    }
+
+    // Simulate success (no server — wire up your preferred backend)
+    msg.className = 'text-sm font-body';
+    msg.style.color = '#E8D5C4';
+    msg.textContent = '✓ Message received — I'll be in touch within two working days.';
+    msg.classList.remove('hidden');
+    form.reset();
+  }
+</script>
+
+</body>
+</html>

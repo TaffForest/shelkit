@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cronwell — Cron Job Management for Developers</title>
+  <meta name="description" content="Cronwell gives developers a single place to schedule, monitor, and debug cron jobs across every environment — with alerts, logs, and a clean API.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#0E1117',
+            surface: '#161B25',
+            border:  '#232B3A',
+            accent:  '#3DDC97',
+            muted:   '#8A97AA',
+            text:    '#E8EDF3',
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background-color: #0E1117; color: #E8EDF3; }
+
+    /* Grid background pattern */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(35,43,58,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(35,43,58,0.5) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Glow on accent */
+    .accent-glow {
+      text-shadow: 0 0 28px rgba(61,220,151,0.45);
+    }
+
+    /* Terminal window */
+    .terminal {
+      background: #0A0D12;
+      border: 1px solid #232B3A;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      background: #161B25;
+      border-bottom: 1px solid #232B3A;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+
+    /* Subtle card hover */
+    .feature-card {
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .feature-card:hover {
+      border-color: #3DDC97;
+      background-color: #1A2133;
+    }
+
+    /* Blinking cursor */
+    .cursor::after {
+      content: '▮';
+      animation: blink 1.1s step-end infinite;
+      color: #3DDC97;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Status pulse */
+    .pulse-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #3DDC97;
+      display: inline-block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(61,220,151,0.5); }
+      50%       { box-shadow: 0 0 0 5px rgba(61,220,151,0); }
+    }
+
+    /* Scroll-linked fade-in */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { opacity: 1; transform: none; transition: none; }
+      .cursor::after { animation: none; }
+      .pulse-dot { animation: none; }
+    }
+
+    /* Nav link underline */
+    .nav-link {
+      position: relative;
+      color: #8A97AA;
+      transition: color 0.15s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 1px;
+      background: #3DDC97;
+      transition: width 0.2s;
+    }
+    .nav-link:hover { color: #E8EDF3; }
+    .nav-link:hover::after { width: 100%; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+<!-- NAV -->
+<header class="fixed top-0 inset-x-0 z-50 border-b border-border bg-bg/80 backdrop-blur-md">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect width="26" height="26" rx="6" fill="#3DDC97"/>
+        <path d="M7 13a6 6 0 1 1 12 0" stroke="#0E1117" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M13 7v6l3.5 2" stroke="#0E1117" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="font-bold text-text text-lg tracking-tight">Cronwell</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+      <a href="#features" class="nav-link text-sm font-medium">Features</a>
+      <a href="#how-it-works" class="nav-link text-sm font-medium">How it works</a>
+      <a href="#pricing" class="nav-link text-sm font-medium">Pricing</a>
+      <a href="#" class="nav-link text-sm font-medium">Docs</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a href="#" class="hidden md:inline text-sm font-medium text-muted hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2 py-1">Log in</a>
+      <a href="#pricing" class="text-sm font-semibold bg-accent text-bg px-4 py-2 rounded-md hover:bg-accent/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg">Deploy free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="grid-bg relative pt-36 pb-28 px-6 overflow-hidden">
+  <!-- Radial accent glow -->
+  <div aria-hidden="true" class="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full" style="background: radial-gradient(ellipse at center, rgba(61,220,151,0.08) 0%, transparent 70%); filter: blur(2px);"></div>
+
+  <div class="max-w-4xl mx-auto text-center relative z-10">
+    <div class="inline-flex items-center gap-2 border border-border bg-surface rounded-full px-4 py-1.5 text-xs font-mono text-muted mb-8">
+      <span class="pulse-dot"></span>
+      <span>Now in public beta — free for 3 jobs</span>
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-text leading-[1.08] mb-6">
+      Cron jobs that<br>
+      <span class="text-accent accent-glow">actually behave.</span>
+    </h1>
+
+    <p class="text-muted text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
+      Schedule, monitor, and debug your cron jobs in one place. Get alerted when something fails, replay missed runs, and ship with confidence — without touching a crontab again.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#pricing" class="w-full sm:w-auto inline-block text-center font-semibold bg-accent text-bg px-7 py-3.5 rounded-md hover:bg-accent/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg">
+        Deploy your first job
+      </a>
+      <a href="#" class="w-full sm:w-auto inline-block text-center font-mono text-sm font-medium text-muted border border-border px-7 py-3.5 rounded-md hover:border-accent hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md">
+        Read the docs →
+      </a>
+    </div>
+  </div>
+
+  <!-- Terminal mock -->
+  <div class="max-w-3xl mx-auto mt-16 relative z-10 fade-in">
+    <div class="terminal shadow-2xl">
+      <div class="terminal-bar">
+        <span class="dot" style="background:#FF5F57"></span>
+        <span class="dot" style="background:#FFBD2E"></span>
+        <span class="dot" style="background:#28C840"></span>
+        <span class="font-mono text-xs text-muted ml-3">cronwell · dashboard</span>
+      </div>
+      <div class="p-6 font-mono text-sm leading-7 overflow-x-auto">
+        <div class="text-muted mb-1">$ cronwell list</div>
+        <div class="mt-3 grid gap-1">
+          <div class="grid grid-cols-[auto_1fr_auto_auto] gap-x-6 items-center">
+            <span class="text-accent">●</span>
+            <span class="text-text">db:backup</span>
+            <span class="text-muted">0 2 * * *</span>
+            <span class="text-accent text-xs">OK  2s ago</span>
+          </div>
+          <div class="grid grid-cols-[auto_1fr_auto_auto] gap-x-6 items-center">
+            <span class="text-accent">●</span>
+            <span class="text-text">reports:weekly</span>
+            <span class="text-muted">0 8 * * 1</span>
+            <span class="text-accent text-xs">OK  6h ago</span>
+          </div>
+          <div class="grid grid-cols-[auto_1fr_auto_auto] gap-x-6 items-center">
+            <span style="color:#F97316">●</span>
+            <span class="text-text">stripe:sync</span>
+            <span class="text-muted">*/15 * * * *</span>
+            <span style="color:#F97316" class="text-xs">LATE 18m</span>
+          </div>
+          <div class="grid grid-cols-[auto_1fr_auto_auto] gap-x-6 items-center">
+            <span class="text-accent">●</span>
+            <span class="text-text">email:digest</span>
+            <span class="text-muted">0 7 * * *</span>
+            <span class="text-accent text-xs">OK  1d ago</span>
+          </div>
+        </div>
+        <div class="mt-5 text-muted">$ cronwell inspect stripe:sync<span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section class="border-y border-border py-10 px-6" aria-label="Used by teams at">
+  <div class="max-w-5xl mx-auto">
+    <p class="text-center text-xs font-mono text-muted uppercase tracking-widest mb-8">Trusted by engineering teams at</p>
+    <div class="flex flex-wrap items-center justify-center gap-10 opacity-50">
+      <!-- SVG word-mark logos -->
+      <svg viewBox="0 0 80 20" width="80" height="20" fill="#E8EDF3" aria-label="Orion Labs"><text y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700">Orion</text></svg>
+      <svg viewBox="0 0 80 20" width="80" height="20" fill="#E8EDF3" aria-label="Fieldset"><text y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700">Fieldset</text></svg>
+      <svg viewBox="0 0 80 20" width="80" height="20" fill="#E8EDF3" aria-label="Vantex"><text y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700">Vantex</text></svg>
+      <svg viewBox="0 0 90 20" width="90" height="20" fill="#E8EDF3" aria-label="Deckhouse"><text y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700">Deckhouse</text></svg>
+      <svg viewBox="0 0 70 20" width="70" height="20" fill="#E8EDF3" aria-label="Palora"><text y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700">Palora</text></svg>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="max-w-2xl mb-16 fade-in">
+      <p class="font-mono text-xs text-accent uppercase tracking-widest mb-3">Features</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-text leading-snug">Everything you stopped hoping crontab would do.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+
+      <!-- Card 1 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <path d="M11 18h14M18 11v14" stroke="#3DDC97" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="18" cy="18" r="7" stroke="#3DDC97" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">Instant job registration</h3>
+        <p class="text-muted text-sm leading-relaxed">Define jobs in code or via the API. Push a cron expression, a name, and a webhook URL — Cronwell handles the rest. No YAML files, no server config.</p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <path d="M11 25l4-5 4 3 4-8" stroke="#3DDC97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="25" cy="12" r="3" stroke="#3DDC97" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">Execution history & logs</h3>
+        <p class="text-muted text-sm leading-relaxed">Every run is captured: start time, duration, exit code, stdout. Filter by job, status, or date range. No more SSH-ing into servers to read logs at 2 AM.</p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <path d="M18 11v7l4 2" stroke="#3DDC97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 26a8 8 0 1 1 12.5 0" stroke="#3DDC97" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">Missed-run detection</h3>
+        <p class="text-muted text-sm leading-relaxed">Cronwell knows when a job was supposed to fire. If it didn't, you hear about it before your users do — with context, not just a ping.</p>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <path d="M14 13h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z" stroke="#3DDC97" stroke-width="1.5"/>
+            <path d="M18 17v4M16 19h4" stroke="#3DDC97" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">Manual trigger & replay</h3>
+        <p class="text-muted text-sm leading-relaxed">Kick off any job from the dashboard or API without touching your server. Replay a specific failed run in one click — great for debugging and incident recovery.</p>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <path d="M13 18c0-2.76 2.24-5 5-5s5 2.24 5 5-2.24 5-5 5" stroke="#3DDC97" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M22 24l3 3M11 13l-2-2" stroke="#3DDC97" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">PagerDuty, Slack & webhooks</h3>
+        <p class="text-muted text-sm leading-relaxed">Route failure alerts wherever your team lives. Native integrations for Slack, PagerDuty, and any webhook endpoint. Configure per-job — not everything is critical.</p>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="feature-card border border-border rounded-xl p-6 bg-surface fade-in">
+        <div class="mb-5">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="8" fill="rgba(61,220,151,0.1)"/>
+            <rect x="10" y="13" width="16" height="10" rx="2" stroke="#3DDC97" stroke-width="1.5"/>
+            <path d="M14 13v-2M18 13v-2M22 13v-2" stroke="#3DDC97" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="text-text font-semibold text-base mb-2">Multi-environment support</h3>
+        <p class="text-muted text-sm leading-relaxed">Separate namespaces for prod, staging, and local. Mirror a job across environments or keep them completely isolated. One dashboard, every context.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="py-24 px-6 border-t border-border">
+  <div class="max-w-5xl mx-auto">
+    <div class="max-w-2xl mb-16 fade-in">
+      <p class="font-mono text-xs text-accent uppercase tracking-widest mb-3">How it works</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-text leading-snug">From zero to monitored in under two minutes.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <!-- Steps -->
+      <ol class="space-y-10">
+        <li class="flex gap-5 fade-in">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full border border-accent text-accent font-mono text-sm font-medium flex items-center justify-center mt-0.5">1</div>
+          <div>
+            <h3 class="text-text font-semibold mb-1">Install the CLI or drop in the SDK</h3>
+            <p class="text-muted text-sm leading-relaxed">One package. Works with Node, Python, Ruby, Go, or any language that can make an HTTP request. No agent to maintain.</p>
+            <div class="mt-3 font-mono text-xs bg-surface border border-border rounded-md px-4 py-3 text-accent">npm install @cronwell/sdk</div>
+          </div>
+        </li>
+        <li class="flex gap-5 fade-in">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full border border-accent text-accent font-mono text-sm font-medium flex items-center justify-center mt-0.5">2</div>
+          <div>
+            <h3 class="text-text font-semibold mb-1">Wrap your job with a heartbeat</h3>
+            <p class="text-muted text-sm leading-relaxed">Two lines of code. Cronwell sees every start, finish, and failure. The heartbeat doubles as your liveness signal.</p>
+            <div class="mt-3 font-mono text-xs bg-surface border border-border rounded-md px-4 py-3 text-muted leading-6">
+              <span class="text-accent">const</span> job = cronwell.<span class="text-text">job</span>(<span class="text-accent">'db:backup'</span>)<br>
+              <span class="text-muted">await</span> job.<span class="text-text">run</span>(() =&gt; backupDatabase())
+            </div>
+          </div>
+        </li>
+        <li class="flex gap-5 fade-in">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full border border-accent text-accent font-mono text-sm font-medium flex items-center justify-center mt-0.5">3</div>
+          <div>
+            <h3 class="text-text font-semibold mb-1">Watch it in the dashboard</h3>
+            <p class="text-muted text-sm leading-relaxed">Every run surfaces automatically. Set your alert thresholds, connect your Slack channel, and go back to building things.</p>
+          </div>
+        </li>
+      </ol>
+
+      <!-- Dashboard sketch -->
+      <div class="fade-in">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot" style="background:#FF5F57"></span>
+            <span class="dot" style="background:#FFBD2E"></span>
+            <span class="dot" style="background:#28C840"></span>
+            <span class="font-mono text-xs text-muted ml-3">cronwell · job detail</span>
+          </div>
+          <div class="p-5 font-mono text-xs space-y-3">
+            <div class="flex justify-between items-center pb-3 border-b border-border">
+              <span class="text-text font-semibold text-sm">db:backup</span>
+              <span class="inline-flex items-center gap-1.5 text-accent"><span class="pulse-dot"></span> Healthy</span>
+            </div>
+            <div class="flex justify-between"><span class="text-muted">Schedule</span><span class="text-text">0 2 * * * (daily at 02:00)</span></div>
+            <div class="flex justify-between"><span class="text-muted">Last run</span><span class="text-text">2 minutes ago</span></div>
+            <div class="flex justify-between"><span class="text-muted">Duration</span><span class="text-text">4.2 s</span></div>
+            <div class="flex justify-between"><span class="text-muted">Success rate</span><span class="text-accent">100% (last 30d)</span></div>
+            <div class="pt-3 border-t border-border">
+              <div class="text-muted mb-2">Run history</div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-accent">✓ 02:00:01</span><span class="text-muted">4.2s · exit 0</span></div>
+                <div class="flex justify-between"><span class="text-accent">✓ 02:00:00</span><span class="text-muted">3.9s · exit 0</span></div>
+                <div class="flex justify-between"><span class="text-accent">✓ 02:00:03</span><span class="text-muted">4.5s · exit 0</span></div>
+                <div class="flex justify-between"><span style="color:#F97316">✗ 02:00:01</span><span class="text-muted">1.1s · exit 1</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="py-24 px-6 border-t border-border">
+  <div class="max-w-5xl mx-auto">
+    <div class="max-w-2xl mb-16 text-center mx-auto fade-in">
+      <p class="font-mono text-xs text-accent uppercase tracking-widest mb-3">Pricing</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-text leading-snug">Simple, usage-based pricing.</h2>
+      <p class="text-muted mt-4 text-base">No seat fees. No per-environment charges. Pay for what you run.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Free -->
+      <div class="border border-border rounded-xl p-7 bg-surface flex flex-col fade-in">
+        <div class="mb-6">
+          <p class="font-semibold text-text mb-1">Hobbyist</p>
+          <div class="flex items-baseline gap-1">
+            <span class="text-4xl font-bold text-text">$0</span>
+            <span class="text-muted text-sm">/ month</span>
+          </div>
+          <p class="text-muted text-sm mt-2">For side projects and evaluation.</p>
+        </div>
+        <ul class="space-y-3 text-sm mb-8 flex-1">
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">3 active jobs</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">7-day log retention</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Email alerts</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">1 environment</span></li>
+        </ul>
+        <a href="#" class="block text-center font-semibold border border-accent text-accent px-5 py-3 rounded-md hover:bg-accent/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">Deploy free</a>
+      </div>
+
+      <!-- Pro (highlighted) -->
+      <div class="border-2 border-accent rounded-xl p-7 bg-surface flex flex-col relative fade-in">
+        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+          <span class="bg-accent text-bg text-xs font-bold px-3 py-1 rounded-full">Most popular</span>
+        </div>
+        <div class="mb-6">
+          <p class="font-semibold text-text mb-1">Pro</p>
+          <div class="flex items-baseline gap-1">
+            <span class="text-4xl font-bold text-text">$29</span>
+            <span class="text-muted text-sm">/ month</span>
+          </div>
+          <p class="text-muted text-sm mt-2">For production apps that can't miss a run.</p>
+        </div>
+        <ul class="space-y-3 text-sm mb-8 flex-1">
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">50 active jobs</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">90-day log retention</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Slack & PagerDuty alerts</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Unlimited environments</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Manual trigger & replay</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Team access (5 seats)</span></li>
+        </ul>
+        <a href="#" class="block text-center font-semibold bg-accent text-bg px-5 py-3 rounded-md hover:bg-accent/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">Start with Pro</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="border border-border rounded-xl p-7 bg-surface flex flex-col fade-in">
+        <div class="mb-6">
+          <p class="font-semibold text-text mb-1">Enterprise</p>
+          <div class="flex items-baseline gap-1">
+            <span class="text-4xl font-bold text-text">Custom</span>
+          </div>
+          <p class="text-muted text-sm mt-2">For teams running jobs at scale.</p>
+        </div>
+        <ul class="space-y-3 text-sm mb-8 flex-1">
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Unlimited jobs</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">1-year log retention</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">SSO & audit log</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">SLA & priority support</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Custom data residency</span></li>
+          <li class="flex gap-2 items-start"><span class="text-accent mt-0.5">✓</span><span class="text-muted">Dedicated Slack channel</span></li>
+        </ul>
+        <a href="#" class="block text-center font-semibold border border-border text-muted px-5 py-3 rounded-md hover:border-accent hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">Talk to us</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="py-28 px-6 border-t border-border">
+  <div class="max-w-2xl mx-auto text-center fade-in">
+    <h2 class="text-3xl md:text-5xl font-bold text-text leading-snug mb-5">Stop finding out from your users when a job fails.</h2>
+    <p class="text-muted text-lg mb-10">Set up your first monitored cron job in the time it takes to make coffee.</p>
+    <a href="#pricing" class="inline-block font-semibold bg-accent text-bg px-8 py-4 rounded-md text-base hover:bg-accent/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg">Deploy your first job — it's free</a>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="border-t border-border py-12 px-6">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="flex items-center gap-2">
+      <svg width="22" height="22" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect width="26" height="26" rx="6" fill="#3DDC97"/>
+        <path d="M7 13a6 6 0 1 1 12 0" stroke="#0E1117" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M13 7v6l3.5 2" stroke="#0E1117" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="font-bold text-text">Cronwell</span>
+      <span class="text-muted text-sm ml-3">© 2025</span>
+    </div>
+    <nav class="flex flex-wrap justify-center gap-6 text-sm text-muted" aria-label="Footer navigation">
+      <a href="#" class="hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Docs</a>
+      <a href="#" class="hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Status</a>
+      <a href="#" class="hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Changelog</a>
+      <a href="#" class="hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Privacy</a>
+      <a href="#" class="hover:text-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">Terms</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Intersection observer for fade-in elements
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Mobile: close nav on logo click (already href="#")
+  // Smooth nav scroll offset for fixed header
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const id = link.getAttribute('href').slice(1);
+      if (!id) return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>

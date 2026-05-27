@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deploybar Test — Coming Soon</title>
+  <meta name="description" content="Deploybar Test is on its way. Sign up to be the first to know when we launch.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#0e0e0f',
+            panel:   '#161618',
+            border:  '#2a2a2e',
+            muted:   '#5a5a62',
+            body:    '#b0b0b8',
+            bright:  '#e8e8ec',
+            accent:  '#5cffb4',
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background-color: #0e0e0f;
+      color: #b0b0b8;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100dvh;
+      margin: 0;
+    }
+
+    /* blinking cursor */
+    .cursor::after {
+      content: '_';
+      color: #5cffb4;
+      animation: blink 1.1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* subtle grid overlay */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(92,255,180,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(92,255,180,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* scanline accent on the status bar */
+    .scanline {
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.18) 2px,
+        rgba(0,0,0,0.18) 4px
+      );
+    }
+
+    /* progress bar fill animation */
+    .bar-fill {
+      width: 0%;
+      animation: fill 2.4s cubic-bezier(0.4,0,0.2,1) forwards 0.6s;
+    }
+    @keyframes fill {
+      to { width: 72%; }
+    }
+
+    /* notify input focus ring */
+    .notify-input:focus {
+      outline: none;
+      border-color: #5cffb4;
+      box-shadow: 0 0 0 2px rgba(92,255,180,0.18);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor::after  { animation: none; opacity: 1; }
+      .bar-fill       { animation: none; width: 72%; }
+    }
+  </style>
+</head>
+<body class="grid-bg">
+
+  <main class="min-h-dvh flex flex-col items-center justify-center px-6 py-20">
+
+    <!-- top label -->
+    <p class="text-muted text-xs tracking-widest uppercase mb-10 select-none">
+      // deploybar test
+    </p>
+
+    <!-- card -->
+    <div class="w-full max-w-lg bg-panel border border-border rounded-sm">
+
+      <!-- card header / status bar -->
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-border scanline select-none">
+        <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
+        <span class="ml-3 text-muted text-xs">deploy.status</span>
+        <span class="ml-auto flex items-center gap-1.5 text-accent text-xs">
+          <span class="relative flex h-1.5 w-1.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
+          </span>
+          LIVE
+        </span>
+      </div>
+
+      <!-- card body -->
+      <div class="px-6 py-8 sm:px-10 sm:py-10">
+
+        <!-- headline -->
+        <h1 class="text-bright text-2xl sm:text-3xl font-bold leading-snug mb-2">
+          something's<br>deploying<span class="cursor"></span>
+        </h1>
+
+        <p class="text-body text-sm leading-relaxed mb-8 max-w-sm">
+          Deploybar Test is being assembled, tested, and pushed to prod.
+          We'll flip the switch when it's ready.
+        </p>
+
+        <!-- progress -->
+        <div class="mb-8">
+          <div class="flex justify-between text-xs text-muted mb-2">
+            <span>build progress</span>
+            <span id="pct">72%</span>
+          </div>
+          <div class="w-full h-1.5 bg-border rounded-full overflow-hidden">
+            <div class="bar-fill h-full bg-accent rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- divider -->
+        <div class="border-t border-border mb-8"></div>
+
+        <!-- notify form -->
+        <p class="text-muted text-xs mb-3 tracking-wide">// get notified at launch</p>
+        <form
+          onsubmit="handleSubmit(event)"
+          class="flex flex-col sm:flex-row gap-3"
+          novalidate
+        >
+          <label for="email" class="sr-only">Email address</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            autocomplete="email"
+            class="notify-input flex-1 bg-surface border border-border rounded-sm px-4 py-3 text-bright text-sm placeholder-muted transition-colors duration-150"
+          >
+          <button
+            type="submit"
+            class="shrink-0 bg-accent text-surface font-bold text-sm px-6 py-3 rounded-sm hover:bg-opacity-90 transition-opacity duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            notify me
+          </button>
+        </form>
+        <p id="form-msg" class="text-accent text-xs mt-3 hidden" role="status">✓ you're on the list. we'll ping you.</p>
+
+      </div>
+    </div>
+
+    <!-- footer -->
+    <p class="mt-10 text-muted text-xs select-none">
+      &copy; <span id="yr"></span> Deploybar Test. All rights reserved.
+    </p>
+
+  </main>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('email');
+      const msg   = document.getElementById('form-msg');
+      if (!input.value || !input.validity.valid) {
+        input.focus();
+        return;
+      }
+      msg.classList.remove('hidden');
+      input.value = '';
+      input.disabled = true;
+      e.target.querySelector('button').disabled = true;
+      e.target.querySelector('button').textContent = 'done ✓';
+    }
+  </script>
+
+</body>
+</html>

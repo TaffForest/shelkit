@@ -17,6 +17,10 @@ against these.
 | 5 | A link-in-bio page for a crypto YouTuber. | [5-crypto-youtuber-bio](5-crypto-youtuber-bio/) |
 | 6 | A pitch deck site for a stealth-stage AI startup. | [6-ai-startup-pitch-deck](6-ai-startup-pitch-deck/) |
 
+Also includes [deploybar-test-deployment](deploybar-test-deployment/) — the
+first site to round-trip through the chat UI all the way to a real Shelby
+deployment.
+
 ## How to view
 
 Each subdirectory contains a self-contained `index.html`. Open directly in

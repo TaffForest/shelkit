@@ -18,7 +18,7 @@ export default function Build() {
     authHeaders,
   } = useWallet()
 
-  const { state, generate, edit, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
+  const { state, generate, edit, deploy, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
   const [inputValue, setInputValue] = useState('')
 
   const handleSend = (text) => {
@@ -82,6 +82,9 @@ export default function Build() {
             status={state.status}
             isFirstTurn={isFirstTurn}
             onUsePrompt={(p) => setInputValue(p)}
+            deploy={state.deploy}
+            turnCount={state.turns.length}
+            onDeploy={deploy}
           />
         </div>
       )}

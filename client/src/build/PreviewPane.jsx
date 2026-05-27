@@ -1,3 +1,5 @@
+import DeployBar from './DeployBar.jsx'
+
 const EXAMPLE_PROMPTS = [
   'A landing page for a SaaS that helps developers manage cron jobs.',
   'A portfolio site for a freelance illustrator with a gallery and contact form.',
@@ -10,6 +12,9 @@ export default function PreviewPane({
   status,
   isFirstTurn,
   onUsePrompt,
+  deploy,
+  turnCount,
+  onDeploy,
 }) {
   const isBusy = status !== 'idle'
   const hasPreview = !!previewUrl
@@ -54,6 +59,13 @@ export default function PreviewPane({
 
   return (
     <div className="preview-pane preview-pane-active">
+      <DeployBar
+        previewUrl={previewUrl}
+        deploy={deploy}
+        currentTurnCount={turnCount}
+        onDeploy={onDeploy}
+        isChatBusy={isBusy}
+      />
       <iframe
         src={src}
         className={`preview-iframe ${isBusy ? 'preview-iframe-busy' : ''}`}

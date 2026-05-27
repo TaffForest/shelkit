@@ -304,6 +304,97 @@
 }
 .preview-pane-active {
   background: transparent;
+  flex-direction: column;
+}
+
+/* ── Deploy bar ─────────────────────────────────────────────────────── */
+
+.deploy-bar {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+.deploy-bar-idle { justify-content: flex-end; }
+
+.deploy-btn,
+.deploy-again {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 6px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.deploy-btn:hover:not(:disabled),
+.deploy-again:hover:not(:disabled) { background: var(--accent-dark); }
+.deploy-btn:disabled,
+.deploy-again:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.deploy-status {
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  font-weight: 600;
+}
+.deploy-url-block {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+.deploy-url {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border);
+  word-break: break-all;
+}
+.deploy-url:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.deploy-copy {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.deploy-copy:hover { color: var(--accent); border-color: var(--accent); }
+.deploy-caption {
+  color: var(--text-muted);
+  opacity: 0.7;
+  font-size: 0.7rem;
+}
+
+.deploy-bar-deploying {
+  color: var(--text-muted);
+}
+.deploy-caret {
+  color: var(--accent);
+  animation: caret-blink 1s steps(2) infinite;
+}
+
+.deploy-bar-failure {
+  background: rgba(248, 113, 113, 0.06);
+  border-bottom-color: var(--error);
+}
+.deploy-failure-msg {
+  color: var(--error);
+  flex: 1;
+  min-width: 0;
 }
 
 .preview-empty {
@@ -379,6 +470,8 @@
 .preview-iframe {
   width: 100%;
   height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   border: none;
   background: #fff;
   transition: opacity 180ms;

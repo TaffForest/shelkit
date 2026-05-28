@@ -14,6 +14,11 @@ services:
       - BASE_DOMAIN=shelkit.forestinfra.com
       - DB_PATH=/app/data/shelkit.db
       - ADMIN_SECRET=${ADMIN_SECRET:-}
+      # ShelKit Build — AI website generator. ANTHROPIC_API_KEY has no
+      # default; container fails loud at first generate call if missing.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+      - AI_PROVIDER=${AI_PROVIDER:-anthropic}
       # nginx-proxy picks these up automatically for routing + SSL
       - VIRTUAL_HOST=shelkit.forestinfra.com,*.shelkit.forestinfra.com
       - VIRTUAL_PORT=3000

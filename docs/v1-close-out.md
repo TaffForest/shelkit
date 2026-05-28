@@ -175,28 +175,34 @@ today. Reducer adds streaming-state to the discriminated union.
 
 **Touches:** anthropic.js, routes/build.js, useBuildState, ChatPanel.
 
-### 2. Production ANTHROPIC_API_KEY location  —  blocker for production
+### 2. Production ANTHROPIC_API_KEY location  —  RESOLVED
 
-Genuinely unanswered. .env.example documents the variable, but where
-does the real key live when ShelKit runs in production at
-shelkit.forestinfra.com? Three plausible answers, each with different
-implications:
+The answer matches the existing ShelKit pattern for all other secrets
+(`JWT_SECRET`, `SHELBY_PRIVATE_KEY`, `ADMIN_SECRET`, etc.): the key
+lives in `.env.production` on the VPS, and is passed into the running
+container via an explicit line in `docker-compose.yml`'s `environment:`
+block.
 
-- **Docker host env**: set via `environment:` in docker-compose.yml
-  on the VPS. Simplest. Requires whoever runs the deploy to have the
-  key. No secret manager.
-- **Docker secrets**: file mounted at `/run/secrets/...`, read by a
-  small wrapper at server startup. Better.
-- **External secret store** (AWS Secrets Manager, Vault, etc.): server
-  fetches at boot. Best, most operationally heavy.
+Until tonight, the compose file was missing the three new env vars the
+chat feature added, so even with the key set on the VPS the container
+wouldn't see it. Resolved in commit `a009ea0` (`chore(docker): pass
+Anthropic env vars through to container`) — see
+[docker-compose.yml lines 17-21](../docker-compose.yml):
 
-**Action needed:** confirm with Gary / whoever currently deploys
-ShelKit. Document the answer in CLAUDE.md or a new ops note. Until this
-is settled, the chat feature can't actually go live — the running
-production server doesn't have the key.
+```yaml
+- ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+- ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+- AI_PROVIDER=${AI_PROVIDER:-anthropic}
+```
 
-**Estimated work:** 30 minutes once the answer is known; could be zero
-code if it's just "set the env var on the VPS."
+`ANTHROPIC_API_KEY` has no default — the container starts but fails
+loud on the first `/api/build/generate` call if the key is missing.
+The other two have working code-level defaults that compose mirrors.
+
+**Remaining manual step** (one-time, done by whoever has VPS SSH):
+add `ANTHROPIC_API_KEY=sk-ant-api03-...` to `.env.production` on the
+VPS before running `bash scripts/deploy.sh`. The key value never goes
+through git.
 
 ### 3. Deploy-after-cascading-failures bug  —  flake under stress
 
@@ -273,16 +279,17 @@ documented and recoverable. The deferred list is known.
 
 ### Tier 2 — small invited alpha (10-20 trusted testers)
 **Needs:**
-- (#2) Production ANTHROPIC_API_KEY location confirmed and set on the
-  VPS — otherwise the live `/build` route returns 500 on every
-  generate.
+- (#2) RESOLVED tonight in commit `a009ea0` (docker-compose passes
+  the three Anthropic env vars through). The one remaining manual
+  step is adding `ANTHROPIC_API_KEY=sk-ant-...` to `.env.production`
+  on the VPS, then `bash scripts/deploy.sh` from the repo on the VPS.
 - (#4) deployLimiter wallet-keying — testers are probably on different
   IPs but you don't want one accidental burst from a shared network to
   block everyone.
 - (#3) Bug 2 fixed OR a "Start fresh" reset button surfaced in the
   failure state so users can recover without page reload.
 
-These three items: ~half a day's work.
+Two coding items remain (#3, #4): ~half a day's work.
 
 ### Tier 3 — public beta / posted on Twitter
 **Needs all of the above plus:**
@@ -306,8 +313,9 @@ Tier 3 list: ~2 weeks of work.
 ### What I'd actually do next
 
 In order:
-1. Tomorrow: confirm production ANTHROPIC_API_KEY location with Gary.
-   30 min.
+1. **Tonight (in progress as this commit lands):** VPS deploy of
+   commit `a009ea0`. Add `ANTHROPIC_API_KEY` to `.env.production` on
+   the VPS, `git pull`, `bash scripts/deploy.sh`. Test as a real user.
 2. Tomorrow or this week: ship the deployLimiter wallet-keying fix.
    1 hour.
 3. Next build session: SSE streaming. 1 chunk, 3-5 evenings. This is
@@ -319,5 +327,5 @@ In order:
 5. Then Tier 2 alpha invites.
 
 The v1 work itself is solid. The honest gap between "feature works" and
-"users can use it" is mostly operational (#2) and one UX cliff (#1).
-Neither is hard; both need to land before this goes anywhere public.
+"users can use it" is mostly one UX cliff (#1, streaming). The
+operational piece (#2) closes tonight if the VPS deploy runs clean.

@@ -16,14 +16,14 @@ export default function Landing() {
             <span>Shel<span className="accent">Kit</span></span>
           </a>
           <div className="nav-links">
+            <a href="#paths" onClick={(e) => { e.preventDefault(); scrollTo('paths') }}>How it works</a>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features') }}>Features</a>
-            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works') }}>How it works</a>
             <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
             <Link to="/docs">Docs</Link>
             <Link to="/gallery">Gallery</Link>
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
-            <Link to="/app" className="nav-cta">Launch App</Link>
+            <Link to="/build" className="nav-cta">Launch App</Link>
           </div>
           <button className="nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
             <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
@@ -33,14 +33,14 @@ export default function Landing() {
         </div>
         {menuOpen && (
           <div className="nav-mobile-menu">
+            <a href="#paths" onClick={(e) => { e.preventDefault(); scrollTo('paths') }}>How it works</a>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features') }}>Features</a>
-            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works') }}>How it works</a>
             <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
             <Link to="/docs" onClick={closeMenu}>Docs</Link>
             <Link to="/gallery" onClick={closeMenu}>Gallery</Link>
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Forest Infra</a>
-            <Link to="/app" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
+            <Link to="/build" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
           </div>
         )}
       </nav>
@@ -49,20 +49,20 @@ export default function Landing() {
       <section className="hero">
         <div className="hero-glow" />
         <h1>
-          Deploy to the <em>decentralised</em> web<br />in one click
+          Build a website.<br />Deploy it <em>forever</em>.
         </h1>
         <p className="hero-sub">
-          No servers. No config. No DevOps.<br />
-          Just drag, drop, and your site is live — forever.
+          Chat with our AI to make one, or upload an existing site.<br />
+          Either way it ships to decentralised hosting in seconds.
         </p>
         <div className="hero-actions">
-          <Link to="/app" className="btn-primary">Deploy now</Link>
-          <a href="#how-it-works" className="btn-secondary">Learn more</a>
+          <Link to="/build" className="btn-primary">Build with AI</Link>
+          <Link to="/app" className="btn-primary btn-primary-alt">Upload a site</Link>
         </div>
         <div className="hero-badges">
-          <span className="badge">Powered by ShelPin</span>
+          <span className="badge">Powered by Shelby</span>
+          <span className="badge">Permanent storage</span>
           <span className="badge">Decentralised</span>
-          <span className="badge">Permanent Storage</span>
         </div>
       </section>
 
@@ -92,25 +92,64 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="section" id="how-it-works">
-        <h2 className="section-title">How it works</h2>
-        <p className="section-sub">Three steps. Under a minute.</p>
-        <div className="steps">
-          <div className="step">
-            <div className="step-num">1</div>
-            <h3>ZIP your build</h3>
-            <p>Run your build tool, then ZIP the output folder. That's it.</p>
+      {/* Two Paths */}
+      <section className="section" id="paths">
+        <h2 className="section-title">Two paths to live</h2>
+        <p className="section-sub">Start from a blank page or a built one. Both end on Shelby.</p>
+        <div className="paths-grid">
+          <div className="path-card">
+            <span className="path-eyebrow">&gt; BUILD WITH AI</span>
+            <ol className="path-steps">
+              <li>
+                <span className="path-num">1.</span>
+                <div>
+                  <h4>Describe what you want.</h4>
+                  <p>"A portfolio site for a folk musician with a bio and tour dates."</p>
+                </div>
+              </li>
+              <li>
+                <span className="path-num">2.</span>
+                <div>
+                  <h4>Chat until it's right.</h4>
+                  <p>"Make the hero darker. Add a testimonials section. Swap the headline."</p>
+                </div>
+              </li>
+              <li>
+                <span className="path-num">3.</span>
+                <div>
+                  <h4>Deploy in one click.</h4>
+                  <p>Your subdomain, your share-link, your site.</p>
+                </div>
+              </li>
+            </ol>
+            <Link to="/build" className="btn-primary">Start building</Link>
           </div>
-          <div className="step">
-            <div className="step-num">2</div>
-            <h3>We pin it</h3>
-            <p>Every file is uploaded to ShelPin's decentralised storage network.</p>
-          </div>
-          <div className="step">
-            <div className="step-num">3</div>
-            <h3>It's live</h3>
-            <p>Instant URL. Your site is served from the decentralised web, permanently.</p>
+          <div className="path-card">
+            <span className="path-eyebrow">&gt; UPLOAD YOUR SITE</span>
+            <ol className="path-steps">
+              <li>
+                <span className="path-num">1.</span>
+                <div>
+                  <h4>ZIP your build folder.</h4>
+                  <p>Or paste a GitHub URL. Vite, Next, plain HTML — all welcome.</p>
+                </div>
+              </li>
+              <li>
+                <span className="path-num">2.</span>
+                <div>
+                  <h4>We pin it to Shelby.</h4>
+                  <p>Every file lands on permanent decentralised storage.</p>
+                </div>
+              </li>
+              <li>
+                <span className="path-num">3.</span>
+                <div>
+                  <h4>Live in seconds.</h4>
+                  <p>Your subdomain, your share-link, your site.</p>
+                </div>
+              </li>
+            </ol>
+            <Link to="/app" className="btn-primary btn-primary-alt">Upload a site</Link>
           </div>
         </div>
       </section>
@@ -121,32 +160,28 @@ export default function Landing() {
         <p className="section-sub">Everything you need. Nothing you don't.</p>
         <div className="features-grid">
           <div className="feature-card">
-            <h3>One-click deploy</h3>
-            <p>No CLI, no Git hooks, no CI/CD pipelines. Just upload and go.</p>
+            <h3>Chat to iterate</h3>
+            <p>Describe your site, then refine it by sending messages. No design tools to learn, no code to write.</p>
           </div>
           <div className="feature-card">
             <h3>Decentralised hosting</h3>
-            <p>Powered by ShelPin and Shelby. Your files live on a distributed network.</p>
+            <p>Powered by Shelby. Your files live on a distributed storage network, not someone else's server.</p>
           </div>
           <div className="feature-card">
             <h3>Permanent URLs</h3>
-            <p>Content-addressed storage means your site never goes down or gets lost.</p>
+            <p>Content-addressed storage means your site never goes down, never gets lost, never expires.</p>
           </div>
           <div className="feature-card">
-            <h3>SPA support</h3>
-            <p>Automatic index.html fallback for React, Vue, and all single-page apps.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Instant preview</h3>
-            <p>Get a live URL in seconds. Share it immediately with your team.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Zero config</h3>
-            <p>No YAML files. No build scripts. No environment variables to set up.</p>
+            <h3>From idea to live in minutes</h3>
+            <p>The AI builder takes about a minute to generate. Deploy adds another five seconds. That's it.</p>
           </div>
           <div className="feature-card">
             <h3>Bring your own domain</h3>
             <p>Point any domain you own to a ShelKit deployment. Add a CNAME and you're done — SSL included.</p>
+          </div>
+          <div className="feature-card">
+            <h3>Zero config</h3>
+            <p>No YAML files. No build scripts. No environment variables. No DevOps team required.</p>
           </div>
         </div>
       </section>
@@ -154,6 +189,39 @@ export default function Landing() {
       {/* Comparison */}
       <section className="section" id="compare">
         <h2 className="section-title">The old way vs the ShelKit way</h2>
+        <p className="section-sub">Whether you're building from scratch or shipping what you've got.</p>
+
+        <div className="compare-pair-label">If you're starting from nothing</div>
+        <div className="compare-grid">
+          <div className="compare-card compare-old">
+            <div className="compare-header">
+              <span className="compare-x">✕</span>
+              Designer + developer
+            </div>
+            <div className="compare-steps">
+              <code>1. Hire a designer (£3k)</code>
+              <code>2. Brief them, wait for mocks</code>
+              <code>3. Approval rounds (3 weeks)</code>
+              <code>4. Hire a developer (£8k+)</code>
+              <code>5. Build it (6 weeks)</code>
+              <code>6. Set up hosting</code>
+              <code>7. Pray it stays online</code>
+            </div>
+          </div>
+          <div className="compare-card compare-new">
+            <div className="compare-header">
+              <span className="compare-check">✓</span>
+              ShelKit AI builder
+            </div>
+            <div className="compare-steps">
+              <code>1. Describe what you want</code>
+              <code>2. Chat until you like it</code>
+              <code>3. Deploy</code>
+            </div>
+          </div>
+        </div>
+
+        <div className="compare-pair-label">If you've already built one</div>
         <div className="compare-grid">
           <div className="compare-card compare-old">
             <div className="compare-header">
@@ -161,14 +229,14 @@ export default function Landing() {
               Traditional deploy
             </div>
             <div className="compare-steps">
-              <code>1. Set up cloud account</code>
+              <code>1. Set up a cloud account</code>
               <code>2. Configure CLI tools</code>
               <code>3. Write build config</code>
-              <code>4. Set up CI/CD pipeline</code>
+              <code>4. Set up CI/CD</code>
               <code>5. Configure DNS</code>
-              <code>6. Set up SSL certificates</code>
-              <code>7. Write deployment scripts</code>
-              <code>8. Debug environment vars</code>
+              <code>6. Set up SSL certs</code>
+              <code>7. Write deploy scripts</code>
+              <code>8. Debug env vars</code>
               <code>9. Wait for propagation</code>
               <code>10. Pray it works</code>
             </div>
@@ -176,7 +244,7 @@ export default function Landing() {
           <div className="compare-card compare-new">
             <div className="compare-header">
               <span className="compare-check">✓</span>
-              ShelKit
+              ShelKit upload
             </div>
             <div className="compare-steps">
               <code>1. ZIP your build folder</code>
@@ -198,14 +266,14 @@ export default function Landing() {
             <div className="pricing-price">Free</div>
             <div className="pricing-desc">Available now</div>
             <ul className="pricing-features">
+              <li>AI website builder</li>
               <li>Unlimited deploys</li>
               <li>Server-side builds</li>
               <li>GitHub integration</li>
               <li>Custom subdomains</li>
               <li>Bring your own domain</li>
-              <li>CLI access</li>
             </ul>
-            <Link to="/app" className="btn-primary">Start deploying</Link>
+            <Link to="/build" className="btn-primary">Start building</Link>
           </div>
 
           <div className="pricing-card pricing-card-main">
@@ -226,9 +294,12 @@ export default function Landing() {
 
       {/* CTA */}
       <section className="cta-section">
-        <h2>Ready to deploy?</h2>
-        <p>Your next site is one drag-and-drop away.</p>
-        <Link to="/app" className="btn-primary btn-lg">Deploy now</Link>
+        <h2>Ready to ship?</h2>
+        <p>Whether you're starting from a blank page or a built one, we've got you.</p>
+        <div className="cta-actions">
+          <Link to="/build" className="btn-primary btn-lg">Build with AI</Link>
+          <Link to="/app" className="btn-primary btn-primary-alt btn-lg">Upload a site</Link>
+        </div>
       </section>
 
       {/* Footer */}
@@ -238,10 +309,10 @@ export default function Landing() {
             <span>Shel<span className="accent">Kit</span></span>
           </div>
           <div className="footer-links">
+            <Link to="/build">Build with AI</Link>
+            <Link to="/app">Upload a site</Link>
             <a href="#features">Features</a>
-            <a href="#how-it-works">How it works</a>
             <Link to="/docs">Docs</Link>
-            <Link to="/app">Launch App</Link>
           </div>
           <div className="footer-links">
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>

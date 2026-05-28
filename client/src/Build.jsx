@@ -18,7 +18,7 @@ export default function Build() {
     authHeaders,
   } = useWallet()
 
-  const { state, generate, edit, deploy, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
+  const { state, generate, edit, deploy, retry, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
   const [inputValue, setInputValue] = useState('')
 
   const handleSend = (text) => {
@@ -75,6 +75,7 @@ export default function Build() {
             setInputValue={setInputValue}
             onSend={handleSend}
             onReset={reset}
+            onRetry={retry}
           />
           <PreviewPane
             previewUrl={state.previewUrl}

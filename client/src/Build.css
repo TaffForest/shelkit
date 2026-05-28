@@ -239,6 +239,26 @@
   padding: 10px 14px;
   border-left: 2px solid var(--error);
   background: rgba(248, 113, 113, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chat-error-msg { flex: 1; min-width: 0; }
+.chat-error-retry {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.chat-error-retry:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .chat-input-area {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { isRetryable } from './errorCopy.js'
 
 function relativeTime(ts, now) {
   const ms = Math.max(0, now - ts)
@@ -19,6 +20,7 @@ export default function ChatPanel({
   setInputValue,
   onSend,
   onReset,
+  onRetry,
 }) {
   const isBusy = status !== 'idle'
   const conversationEndRef = useRef(null)
@@ -99,7 +101,12 @@ export default function ChatPanel({
 
         {error && (
           <div className="chat-error" role="alert">
-            {error}
+            <span className="chat-error-msg">{error.message}</span>
+            {isRetryable(error.code) && (
+              <button className="chat-error-retry" onClick={onRetry} type="button">
+                Try again
+              </button>
+            )}
           </div>
         )}
 

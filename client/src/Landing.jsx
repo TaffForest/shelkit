@@ -23,7 +23,7 @@ export default function Landing() {
             <Link to="/gallery">Gallery</Link>
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
-            <Link to="/build" className="nav-cta">Launch App</Link>
+            <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
           <button className="nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
             <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
@@ -40,7 +40,7 @@ export default function Landing() {
             <Link to="/gallery" onClick={closeMenu}>Gallery</Link>
             <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Forest Infra</a>
-            <Link to="/build" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
+            <Link to="/app" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
           </div>
         )}
       </nav>
@@ -57,7 +57,7 @@ export default function Landing() {
         </p>
         <div className="hero-actions">
           <Link to="/build" className="btn-primary">Build with AI</Link>
-          <Link to="/app" className="btn-primary btn-primary-alt">Upload a site</Link>
+          <Link to="/upload" className="btn-primary btn-primary-alt">Upload a site</Link>
         </div>
         <div className="hero-badges">
           <span className="badge">Powered by Shelby</span>
@@ -149,7 +149,7 @@ export default function Landing() {
                 </div>
               </li>
             </ol>
-            <Link to="/app" className="btn-primary btn-primary-alt">Upload a site</Link>
+            <Link to="/upload" className="btn-primary btn-primary-alt">Upload a site</Link>
           </div>
         </div>
       </section>
@@ -298,7 +298,7 @@ export default function Landing() {
         <p>Whether you're starting from a blank page or a built one, we've got you.</p>
         <div className="cta-actions">
           <Link to="/build" className="btn-primary btn-lg">Build with AI</Link>
-          <Link to="/app" className="btn-primary btn-primary-alt btn-lg">Upload a site</Link>
+          <Link to="/upload" className="btn-primary btn-primary-alt btn-lg">Upload a site</Link>
         </div>
       </section>
 
@@ -310,7 +310,7 @@ export default function Landing() {
           </div>
           <div className="footer-links">
             <Link to="/build">Build with AI</Link>
-            <Link to="/app">Upload a site</Link>
+            <Link to="/upload">Upload a site</Link>
             <a href="#features">Features</a>
             <Link to="/docs">Docs</Link>
           </div>

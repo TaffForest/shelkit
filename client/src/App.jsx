@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { WalletProvider } from './hooks/useWallet.jsx'
 import { Component } from 'react'
 import Landing from './Landing'
+import Chooser from './Chooser'
 import Deploy from './Deploy'
 import Dashboard from './Dashboard'
 import Docs from './Docs'
@@ -55,7 +56,8 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/app" element={<Deploy />} />
+            <Route path="/app" element={<Chooser />} />
+            <Route path="/upload" element={<Deploy />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/gallery" element={<Gallery />} />

@@ -2,8 +2,8 @@ import { useReducer, useCallback, useMemo } from 'react'
 import { zipPreview } from './zipFiles.js'
 import { friendlyError } from './errorCopy.js'
 
-const GENERATE_TIMEOUT_MS = 90_000
-const EDIT_TIMEOUT_MS = 90_000
+const GENERATE_TIMEOUT_MS = 180_000
+const EDIT_TIMEOUT_MS = 180_000
 const DEPLOY_TIMEOUT_MS = 180_000
 
 const initialDeploy = {

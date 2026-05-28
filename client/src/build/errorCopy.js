@@ -8,7 +8,7 @@ const STATIC_COPY = {
   no_tool_call:        'The model returned an unexpected response. Try again — usually transient.',
   rate_limited:        'Anthropic rate limit hit. Try again in a moment.',
   auth:                "Something's not set up right on our end. This isn't your fault — try again shortly.",
-  timeout:             'The request took longer than 90 seconds and was cancelled. Try again, or simplify your prompt.',
+  timeout:             'The request took longer than 3 minutes and was cancelled. Try again, or simplify your prompt.',
   unknown:             "Something went wrong. Try again — if it keeps happening, it's on our end, not yours.",
 }
 

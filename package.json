@@ -8,7 +8,8 @@
     "dev": "env -u ANTHROPIC_API_KEY node server/index.js",
     "smoke:model": "node scripts/test-model.js",
     "smoke:build": "node scripts/test-build.js",
-    "smoke:continuity": "node scripts/test-continuity.js"
+    "smoke:continuity": "node scripts/test-continuity.js",
+    "smoke:deploy": "node scripts/test-deploy.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.99.0",
@@ -19,6 +20,7 @@
     "dotenv": "^17.3.1",
     "express": "^4.21.0",
     "express-rate-limit": "^8.3.1",
+    "fflate": "0.8.3",
     "got": "^14.6.6",
     "jsonwebtoken": "^9.0.3",
     "multer": "^1.4.5-lts.1",

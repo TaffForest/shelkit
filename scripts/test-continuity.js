@@ -3,7 +3,7 @@
 // asserts the pipeline still threads end-to-end. Structural checks are
 // deliberately loose — we're testing the wiring, not the model.
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true });
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true, quiet: true });
 const jwt = require('jsonwebtoken');
 
 const SECRET = process.env.JWT_SECRET || 'shelkit_dev_secret_change_me';

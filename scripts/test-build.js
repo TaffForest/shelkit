@@ -4,7 +4,7 @@
 //   node scripts/test-build.js "<prompt>"                       — custom prompt, generate only
 //   node scripts/test-build.js "<prompt>" --edit "<instruction>"  — generate then edit
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true });
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true, quiet: true });
 const jwt = require('jsonwebtoken');
 
 const SECRET = process.env.JWT_SECRET || 'shelkit_dev_secret_change_me';

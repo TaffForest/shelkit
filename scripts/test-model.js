@@ -1,7 +1,7 @@
 // Smoke test: confirm the configured model ID resolves.
 // Sends a 10-token "ping" — costs fractions of a cent.
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true });
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env'), override: true, quiet: true });
 const Anthropic = require('@anthropic-ai/sdk');
 
 const candidates = [

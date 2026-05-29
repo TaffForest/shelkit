@@ -21,7 +21,6 @@ export default function Landing() {
             <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
             <Link to="/docs">Docs</Link>
             <Link to="/gallery">Gallery</Link>
-            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
             <Link to="/app" className="nav-cta">Launch App</Link>
           </div>
@@ -38,7 +37,6 @@ export default function Landing() {
             <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollTo('pricing') }}>Pricing</a>
             <Link to="/docs" onClick={closeMenu}>Docs</Link>
             <Link to="/gallery" onClick={closeMenu}>Gallery</Link>
-            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Forest Infra</a>
             <Link to="/app" className="nav-mobile-cta" onClick={closeMenu}>Launch App</Link>
           </div>
@@ -315,13 +313,12 @@ export default function Landing() {
             <Link to="/docs">Docs</Link>
           </div>
           <div className="footer-links">
-            <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>
             <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a>
             <a href="https://foreststaking.com" target="_blank" rel="noopener noreferrer">Forest Staking</a>
             <a href="https://shelby.xyz" target="_blank" rel="noopener noreferrer">Shelby</a>
           </div>
           <div className="footer-copy">
-            &copy; {new Date().getFullYear()} ShelKit &mdash; a <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a> product. Powered by <a href="https://shelpin.forestinfra.com" target="_blank" rel="noopener noreferrer">ShelPin</a>.
+            &copy; {new Date().getFullYear()} ShelKit &mdash; a <a href="https://forestinfra.com" target="_blank" rel="noopener noreferrer">Forest Infra</a> product.
           </div>
         </div>
       </footer>

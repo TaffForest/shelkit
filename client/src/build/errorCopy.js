@@ -27,6 +27,9 @@ export function friendlyError(code, retryAfter) {
   if (code === 'rate_limited_client') {
     return `Hit the build rate limit. Try again in ${formatRetryAfter(retryAfter)}.`
   }
+  if (code === 'token_cap') {
+    return `You've reached today's generation limit. Your budget resets in ${formatRetryAfter(retryAfter)}.`
+  }
   return STATIC_COPY[code] || STATIC_COPY.unknown
 }
 

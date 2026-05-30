@@ -19,6 +19,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-6}
       - AI_PROVIDER=${AI_PROVIDER:-anthropic}
+      - DAILY_TOKEN_CAP=${DAILY_TOKEN_CAP:-500000}
       # nginx-proxy picks these up automatically for routing + SSL
       - VIRTUAL_HOST=shelkit.forestinfra.com,*.shelkit.forestinfra.com
       - VIRTUAL_PORT=3000

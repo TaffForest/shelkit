@@ -7,7 +7,8 @@
  * on stable error codes.
  *
  * @typedef {{ path: string, content: string }} GeneratedFile
- * @typedef {{ files: GeneratedFile[], assistantMessage: string }} SiteResult
+ * @typedef {{ inputTokens: number, outputTokens: number, totalTokens: number }} Usage
+ * @typedef {{ files: GeneratedFile[], assistantMessage: string, usage: Usage }} SiteResult
  * @typedef {{ role: 'user'|'assistant', text: string }} ChatTurn
  *
  * @typedef Provider

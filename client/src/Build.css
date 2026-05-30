@@ -138,6 +138,38 @@
   letter-spacing: 0.18em;
   color: var(--text-muted);
 }
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.chat-budget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.chat-budget-bar {
+  display: inline-block;
+  width: 64px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.chat-budget-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+.chat-budget-low .chat-budget-fill { background: #d98a2b; }
+.chat-budget-low .chat-budget-text { color: #d98a2b; }
+.chat-budget-exhausted { color: var(--error); }
+
 .chat-startover {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;

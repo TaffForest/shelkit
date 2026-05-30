@@ -5,6 +5,7 @@ const { nanoid } = require('nanoid');
 const requireAuth = require('../middleware/requireAuth');
 const aiClient = require('../services/aiClient');
 const previewStore = require('../services/buildPreviewStore');
+const tokenBudget = require('../services/tokenBudget');
 
 const router = express.Router();
 
@@ -28,6 +29,23 @@ const buildRateLimit = rateLimit({
     code: 'rate_limited_client',
   },
 });
+
+/** Reject the request if the wallet has spent its daily token budget. Runs
+ * after requireAuth (needs req.wallet) and before the model call, so we never
+ * burn Anthropic spend on a request we'd reject. Returns 429 + Retry-After so
+ * the client can show when the budget resets (00:00 UTC). */
+function tokenCapGuard(req, res, next) {
+  const { allowed, used, cap, resetSeconds } = tokenBudget.checkCap(req.wallet);
+  if (allowed) return next();
+  res.set('Retry-After', String(resetSeconds));
+  return res.status(429).json({
+    error: 'Daily generation limit reached. Your budget resets at 00:00 UTC.',
+    code: 'token_cap',
+    retryAfter: resetSeconds,
+    used,
+    cap,
+  });
+}
 
 /** Translate a thrown error from the AI client into an HTTP response.
  * Provider-specific shapes are normalised to AiClientError upstream; here
@@ -101,7 +119,7 @@ function filesToMap(files) {
 }
 
 /** POST /api/build/generate — generate a new site from a prompt */
-router.post('/generate', requireAuth, buildRateLimit, async (req, res) => {
+router.post('/generate', requireAuth, buildRateLimit, tokenCapGuard, async (req, res) => {
   const { prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Prompt is required.' });
@@ -111,7 +129,8 @@ router.post('/generate', requireAuth, buildRateLimit, async (req, res) => {
   }
 
   try {
-    const { files, assistantMessage } = await aiClient.generateSite({ prompt: prompt.trim() });
+    const { files, assistantMessage, usage } = await aiClient.generateSite({ prompt: prompt.trim() });
+    tokenBudget.recordUsage(req.wallet, usage?.totalTokens);
     const fileMap = filesToMap(files);
     if (!fileMap['index.html']) {
       return res.status(502).json({ error: 'Generated site is missing index.html.' });
@@ -125,14 +144,20 @@ router.post('/generate', requireAuth, buildRateLimit, async (req, res) => {
       previewUrl: `/api/build/preview/${sessionId}/index.html`,
       files: Object.keys(fileMap),
       assistantMessage,
+      budget: tokenBudget.snapshot(req.wallet),
     });
   } catch (err) {
     errorResponse(res, err);
   }
 });
 
+/** GET /api/build/budget — current daily token budget for the wallet */
+router.get('/budget', requireAuth, (req, res) => {
+  res.json(tokenBudget.snapshot(req.wallet));
+});
+
 /** POST /api/build/edit — modify the site in an existing session */
-router.post('/edit', requireAuth, buildRateLimit, async (req, res) => {
+router.post('/edit', requireAuth, buildRateLimit, tokenCapGuard, async (req, res) => {
   const { sessionId, instruction, conversation } = req.body || {};
   if (!sessionId || typeof sessionId !== 'string') {
     return res.status(400).json({ error: 'sessionId is required.' });
@@ -155,11 +180,12 @@ router.post('/edit', requireAuth, buildRateLimit, async (req, res) => {
   const currentFiles = Object.entries(session.files).map(([p, content]) => ({ path: p, content }));
 
   try {
-    const { files, assistantMessage } = await aiClient.editSite({
+    const { files, assistantMessage, usage } = await aiClient.editSite({
       instruction: instruction.trim(),
       currentFiles,
       conversation: Array.isArray(conversation) ? conversation : [],
     });
+    tokenBudget.recordUsage(req.wallet, usage?.totalTokens);
     const fileMap = filesToMap(files);
     if (!fileMap['index.html']) {
       return res.status(502).json({ error: 'Edited site is missing index.html.' });
@@ -172,6 +198,7 @@ router.post('/edit', requireAuth, buildRateLimit, async (req, res) => {
       previewUrl: `/api/build/preview/${sessionId}/index.html`,
       files: Object.keys(fileMap),
       assistantMessage,
+      budget: tokenBudget.snapshot(req.wallet),
     });
   } catch (err) {
     errorResponse(res, err);

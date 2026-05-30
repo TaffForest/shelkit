@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useWallet } from './hooks/useWallet.jsx'
 import { useBuildState } from './build/useBuildState.js'
@@ -18,12 +18,21 @@ export default function Build() {
     authHeaders,
   } = useWallet()
 
-  const { state, generate, edit, deploy, retry, reset, isBusy, isFirstTurn } = useBuildState(authHeaders)
+  const { state, generate, edit, deploy, retry, reset, refreshBudget, isBusy, isFirstTurn } = useBuildState(authHeaders)
   const [inputValue, setInputValue] = useState('')
 
-  const handleSend = (text) => {
-    if (isFirstTurn) generate(text)
-    else edit(text)
+  // Load the daily token budget once connected so the indicator shows before
+  // the first send.
+  useEffect(() => {
+    if (connected) refreshBudget()
+  }, [connected, refreshBudget])
+
+  const handleSend = async (text) => {
+    if (isFirstTurn) await generate(text)
+    else await edit(text)
+    // Re-sync after the attempt: success responses already carry budget, but a
+    // cap-rejected send doesn't — this keeps the indicator truthful either way.
+    refreshBudget()
   }
 
   return (
@@ -70,6 +79,7 @@ export default function Build() {
             turns={state.turns}
             status={state.status}
             error={state.error}
+            budget={state.budget}
             isFirstTurn={isFirstTurn}
             inputValue={inputValue}
             setInputValue={setInputValue}

@@ -331,6 +331,18 @@ async function callModel(messages, system) {
   }
 }
 
+/** Total billable tokens (input + output) from an Anthropic response, for
+ * the per-wallet daily budget. Cache fields aren't summed — no caching is
+ * configured, so they're always zero here. */
+function usageFrom(response) {
+  const u = response.usage || {};
+  return {
+    inputTokens: u.input_tokens || 0,
+    outputTokens: u.output_tokens || 0,
+    totalTokens: (u.input_tokens || 0) + (u.output_tokens || 0),
+  };
+}
+
 function parseResponse(response) {
   const toolUse = response.content.find(b => b.type === 'tool_use' && b.name === 'emit_site');
   if (!toolUse) {
@@ -340,7 +352,7 @@ function parseResponse(response) {
   if (!Array.isArray(files) || files.length === 0) {
     throw new AiClientError('empty_files', 'Model returned no files');
   }
-  return { files, assistantMessage: assistant_message || '' };
+  return { files, assistantMessage: assistant_message || '', usage: usageFrom(response) };
 }
 
 const EDIT_MODE_ADDENDUM = `EDIT MODE

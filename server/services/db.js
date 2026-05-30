@@ -62,7 +62,19 @@ db.exec(`
     FOREIGN KEY (deployment_id) REFERENCES deployments(id)
   );
 
+  -- One row per (wallet, UTC day). Accumulates Anthropic tokens spent by the
+  -- Build feature so a daily per-wallet cap can throttle cost-abuse. Old rows
+  -- are harmless to keep (a few bytes/day/wallet) but can be pruned by day.
+  CREATE TABLE IF NOT EXISTS wallet_token_usage (
+    wallet TEXT NOT NULL,
+    day TEXT NOT NULL,
+    tokens INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (wallet, day)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_custom_domains_deployment ON custom_domains(deployment_id);
+  CREATE INDEX IF NOT EXISTS idx_token_usage_day ON wallet_token_usage(day);
   CREATE INDEX IF NOT EXISTS idx_deployments_wallet ON deployments(wallet);
   CREATE INDEX IF NOT EXISTS idx_deployments_subdomain ON deployments(subdomain);
   CREATE INDEX IF NOT EXISTS idx_deployments_deleted ON deployments(deleted_at);

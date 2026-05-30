@@ -22,6 +22,7 @@ const initialState = {
   previewVersion: 0,       // bumped on each success; appended to iframe src for cache-bust
   turns: [],               // [{ role: 'user' | 'assistant', text: string, at: number }]
   error: null,             // null | { message, code, retryAfter }
+  budget: null,            // null | { used, cap, remaining, unlimited, resetSeconds }
   deploy: initialDeploy,
 }
 
@@ -41,6 +42,7 @@ function reducer(state, action) {
         sessionId: action.sessionId,
         previewUrl: action.previewUrl,
         previewVersion: state.previewVersion + 1,
+        budget: action.budget ?? state.budget,
         turns: [...state.turns, { role: 'assistant', text: action.assistantMessage, at: Date.now() }],
       }
     case 'EDIT_START':
@@ -55,8 +57,11 @@ function reducer(state, action) {
         ...state,
         status: 'idle',
         previewVersion: state.previewVersion + 1,
+        budget: action.budget ?? state.budget,
         turns: [...state.turns, { role: 'assistant', text: action.assistantMessage, at: Date.now() }],
       }
+    case 'SET_BUDGET':
+      return { ...state, budget: action.budget }
     case 'RETRY_GENERATE_START':
       // No turn push — the failed user turn is already in state.turns.
       return { ...state, status: 'generating', error: null }
@@ -130,6 +135,7 @@ export function useBuildState(authHeaders) {
         sessionId: data.sessionId,
         previewUrl: data.previewUrl,
         assistantMessage: data.assistantMessage || '',
+        budget: data.budget,
       })
     } catch (err) {
       const code = err?.name === 'AbortError' ? 'timeout' : 'unknown'
@@ -151,7 +157,7 @@ export function useBuildState(authHeaders) {
       })
       if (!res.ok) return failureFromResponse(res, dispatch)
       const data = await res.json()
-      dispatch({ type: 'EDIT_SUCCESS', assistantMessage: data.assistantMessage || '' })
+      dispatch({ type: 'EDIT_SUCCESS', assistantMessage: data.assistantMessage || '', budget: data.budget })
     } catch (err) {
       const code = err?.name === 'AbortError' ? 'timeout' : 'unknown'
       dispatch({ type: 'FAILURE', message: friendlyError(code, null), code, retryAfter: null })
@@ -231,10 +237,24 @@ export function useBuildState(authHeaders) {
 
   const reset = useCallback(() => dispatch({ type: 'RESET' }), [])
 
+  // Fetch the wallet's current daily token budget. Called on mount and after
+  // each send so the indicator stays accurate even when a send is rejected
+  // by the cap (which doesn't return a success-shaped budget). Best-effort —
+  // a failed fetch just leaves the last-known budget in place.
+  const refreshBudget = useCallback(async () => {
+    try {
+      const res = await fetch('/api/build/budget', { headers: { ...authHeaders() } })
+      if (!res.ok) return
+      dispatch({ type: 'SET_BUDGET', budget: await res.json() })
+    } catch {
+      // ignore — non-critical
+    }
+  }, [authHeaders])
+
   const derived = useMemo(() => ({
     isBusy: state.status !== 'idle',
     isFirstTurn: state.sessionId === null,
   }), [state.status, state.sessionId])
 
-  return { state, generate, edit, deploy, retry, reset, ...derived }
+  return { state, generate, edit, deploy, retry, reset, refreshBudget, ...derived }
 }

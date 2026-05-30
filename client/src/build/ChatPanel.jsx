@@ -1,5 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
-import { isRetryable } from './errorCopy.js'
+import { isRetryable, formatRetryAfter } from './errorCopy.js'
+
+/** Compact budget line for the chat header. Returns null when there's nothing
+ * useful to show (no data yet, or the cap is disabled). */
+function BudgetIndicator({ budget }) {
+  if (!budget || budget.unlimited || !budget.cap) return null
+  const { used, cap, remaining, resetSeconds } = budget
+  const usedPct = Math.min(100, Math.round((used / cap) * 100))
+  const exhausted = remaining <= 0
+  const low = !exhausted && remaining / cap <= 0.15
+  const cls = exhausted ? 'chat-budget-exhausted' : low ? 'chat-budget-low' : ''
+
+  return (
+    <div className={`chat-budget ${cls}`} title={`${used.toLocaleString()} / ${cap.toLocaleString()} tokens used today`}>
+      {exhausted ? (
+        <span>Daily limit reached · resets in {formatRetryAfter(resetSeconds)}</span>
+      ) : (
+        <>
+          <span className="chat-budget-bar" aria-hidden>
+            <span className="chat-budget-fill" style={{ width: `${usedPct}%` }} />
+          </span>
+          <span className="chat-budget-text">{usedPct}% of daily budget</span>
+        </>
+      )}
+    </div>
+  )
+}
 
 function relativeTime(ts, now) {
   const ms = Math.max(0, now - ts)
@@ -15,6 +41,7 @@ export default function ChatPanel({
   turns,
   status,
   error,
+  budget,
   isFirstTurn,
   inputValue,
   setInputValue,
@@ -57,11 +84,14 @@ export default function ChatPanel({
     <div className="chat-panel">
       <div className="chat-header">
         <span className="chat-header-label">CHAT</span>
-        {!isFirstTurn && !isBusy && (
-          <button className="chat-startover" onClick={onReset} type="button">
-            Start over
-          </button>
-        )}
+        <div className="chat-header-right">
+          <BudgetIndicator budget={budget} />
+          {!isFirstTurn && !isBusy && (
+            <button className="chat-startover" onClick={onReset} type="button">
+              Start over
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="chat-conversation">

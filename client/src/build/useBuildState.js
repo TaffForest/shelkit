@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useMemo } from 'react'
+import { useReducer, useCallback, useMemo, useRef, useEffect } from 'react'
 import { zipPreview } from './zipFiles.js'
 import { friendlyError } from './errorCopy.js'
 
@@ -114,6 +114,18 @@ async function failureFromResponse(res, dispatch) {
 export function useBuildState(authHeaders) {
   const [state, dispatch] = useReducer(reducer, initialState)
 
+  // Mirror the latest *committed* state into a ref so event-handler callbacks
+  // read current values rather than values captured in a stale closure.
+  // Fixes Bug 2 (docs/v1-close-out.md): after cascading generate failures then
+  // a success, the Deploy click could silently no-op because the bound deploy
+  // callback had been memoised against an earlier render where previewUrl was
+  // still null, so its `if (!previewUrl) return` guard fired with no dispatch
+  // and no network request. Reading from the ref makes the guard see reality.
+  // Written in an effect (not during render) so it only ever holds committed
+  // values, which is correct under React 19 concurrent rendering.
+  const stateRef = useRef(state)
+  useEffect(() => { stateRef.current = state })
+
   // Inner fetch helpers — no START dispatch; caller handles that. Lets
   // both the public generate()/edit() and retry() share the network code
   // without duplicating turn-push semantics.
@@ -199,15 +211,25 @@ export function useBuildState(authHeaders) {
     }
   }, [runGenerate, runEdit, state.error, state.sessionId, state.turns])
 
+  // Stable identity (deps: just authHeaders). All mutable state is read from
+  // stateRef at call time, so the bound onClick can never act on a stale
+  // snapshot — see the stateRef note above and Bug 2.
   const deploy = useCallback(async () => {
-    if (!state.previewUrl || state.deploy.status === 'deploying') return
+    const { status, previewUrl, deploy: deployState } = stateRef.current
+    if (!previewUrl) {
+      // Should be unreachable: the button is disabled without a preview. If it
+      // ever fires, it's the Bug 2 class of issue — leave a breadcrumb.
+      console.warn('[deploy] click ignored: no preview URL in current state')
+      return
+    }
+    if (status !== 'idle' || deployState.status === 'deploying') return
     dispatch({ type: 'DEPLOY_START' })
 
     const ctrl = new AbortController()
     const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'AbortError')), DEPLOY_TIMEOUT_MS)
 
     try {
-      const zipFile = await zipPreview(state.previewUrl)
+      const zipFile = await zipPreview(previewUrl)
       const form = new FormData()
       form.append('file', zipFile)
 
@@ -233,7 +255,7 @@ export function useBuildState(authHeaders) {
     } finally {
       clearTimeout(timer)
     }
-  }, [authHeaders, state.previewUrl, state.deploy.status])
+  }, [authHeaders])
 
   const reset = useCallback(() => dispatch({ type: 'RESET' }), [])
 

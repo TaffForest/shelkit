@@ -19,11 +19,10 @@ const buildRateLimit = rateLimit({
   legacyHeaders: false,
   // Key by wallet (set by requireAuth above this middleware); fall back
   // to IP for defence-in-depth if anyone reorders middleware.
-  // ipKeyGenerator is required for IPv6 safety in express-rate-limit v8.
-  // Passing req.ip directly throws ERR_ERL_KEY_GEN_IPV6 at registration —
-  // server starts but middleware is silently not attached. Diagnostic
-  // signal: no RateLimit-* headers on responses.
-  keyGenerator: (req) => req.wallet || ipKeyGenerator(req),
+  // ipKeyGenerator takes the IP *string* and masks IPv6 to a /56 so an
+  // attacker can't bypass the limit by walking a v6 range; returning a raw
+  // v6 address would trip ERR_ERL_KEY_GEN_IPV6 in express-rate-limit v8.
+  keyGenerator: (req) => req.wallet || ipKeyGenerator(req.ip),
   message: {
     error: 'Too many requests in a short period. Wait a few minutes and try again.',
     code: 'rate_limited_client',

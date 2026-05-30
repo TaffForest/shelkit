@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 const {
   handleDeploy, serveDeploy, listDeployments, subdomainMiddleware, streamLogs,
@@ -49,6 +49,13 @@ const deployLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+  // Key by wallet (set by requireAuth, which runs before this on every
+  // deploy route) so shared-IP users — corporate/campus/carrier NAT — don't
+  // compete for one 5/min bucket. Falls back to IP if middleware is ever
+  // reordered. ipKeyGenerator takes the IP *string* and masks IPv6 to a /56
+  // so an attacker can't bypass the limit by walking a v6 range; returning a
+  // raw v6 address would trip ERR_ERL_KEY_GEN_IPV6 in v8.
+  keyGenerator: (req) => req.wallet || ipKeyGenerator(req.ip),
   message: { error: 'Too many deployments. Please wait a minute.' },
 });
 
